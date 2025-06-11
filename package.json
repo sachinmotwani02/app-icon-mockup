@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "framer-motion": "^12.12.2",
+    "colorthief": "^2.6.0",
+    "framer-motion": "^12.15.0",
+    "html2canvas": "^1.4.1",
+    "lucide-react": "^0.511.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-easy-crop": "^5.4.2"
