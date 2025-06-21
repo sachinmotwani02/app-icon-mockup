@@ -1,16 +1,57 @@
+@font-face {
+  font-family: 'SFProRegular';
+  src: url('./assets/fonts/SFProRegular.OTF') format('opentype');
+  font-display: block;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'SFProMedium';
+  src: url('./assets/fonts/SFProMedium.OTF') format('opentype');
+  font-display: block;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'SFProBold';
+  src: url('./assets/fonts/SFProBold.OTF') format('opentype');
+  font-display: block;
+  font-weight: 700;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  font-family: 'SFProRegular', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background: #f8f9fa;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
 }
 
 a {
@@ -24,10 +65,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  display: block;
   min-width: 320px;
-  min-height: 100vh;
+  min-height: auto;
 }
 
 h1 {
@@ -41,7 +81,9 @@ button {
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
-  font-family: inherit;
+  font-family: 'SFProMedium', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
@@ -54,6 +96,193 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* SF Pro Font Utility Classes */
+.sf-pro-regular {
+  font-family: 'SFProRegular', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.sf-pro-medium {
+  font-family: 'SFProMedium', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.sf-pro-bold {
+  font-family: 'SFProBold', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+/* Custom Range Slider Styles */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Track */
+input[type="range"]::-webkit-slider-track {
+  background: linear-gradient(to right, #000 0%, #007AFF 100%);
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type="range"]::-moz-range-track {
+  background: linear-gradient(to right, #000 0%, #007AFF 100%);
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+}
+
+/* Thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #007AFF;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #007AFF;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+/* Hover and Focus States */
+input[type="range"]:hover::-webkit-slider-thumb {
+  /* Removed scale and shadow effects */
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+  /* Removed scale and shadow effects */
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  /* Removed shadow effects */
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+  /* Removed shadow effects */
+}
+
+/* Smooth transitions for layout changes */
+.device-frame-container {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.controls-panel {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Improved button styles */
+button:not([style*="background: none"]) {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:not([style*="background: none"]):hover {
+  /* Removed transform and shadow effects */
+}
+
+button:not([style*="background: none"]):active {
+  /* Removed transform and shadow effects */
+}
+
+/* Enhanced input focus states */
+input[type="text"]:focus,
+input[type="color"]:focus {
+  /* Removed shadow and scale effects */
+}
+
+input[type="text"] {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive optimizations */
+@media (max-width: 1200px) {
+  /* Ensure proper stacking on medium screens */
+  .main-container {
+    align-items: center !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile optimizations */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Reduce spacing on mobile */
+  .controls-panel {
+    padding: 20px !important;
+    gap: 16px !important;
+  }
+  
+  /* Better button sizing on mobile */
+  button {
+    min-height: 44px; /* iOS recommended touch target */
+  }
+  
+  /* Improved input sizing on mobile */
+  input[type="text"] {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  /* Small mobile optimizations */
+  .controls-panel {
+    padding: 16px !important;
+    gap: 12px !important;
+  }
+  
+  /* Smaller gaps for very small screens */
+  .view-mode-grid {
+    gap: 6px !important;
+  }
+}
+
+/* Improved accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  button {
+    border: 2px solid currentColor;
+  }
+  
+  input[type="text"],
+  input[type="color"] {
+    border-width: 2px;
+  }
+}
+
+/* Dark mode support for system preferences */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -65,4 +294,34 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Improved selection styling */
+::selection {
+  background-color: rgba(0, 122, 255, 0.3);
+  color: inherit;
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* Better error states */
+.error {
+  border-color: #ff3b30 !important;
+  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.3) !important;
 }

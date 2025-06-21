@@ -2,8 +2,15 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import ColorThief from 'colorthief';
 import { motion, AnimatePresence } from 'framer-motion';
-import html2canvas from 'html2canvas';
-import { Shuffle, Sun, Moon, Upload, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
+import domtoimage from 'dom-to-image-more';
+import { Shuffle, Grip, Sun, Moon, Upload, Pencil, Download, Monitor, Paintbrush, Frame, ArrowUpLeft, ArrowUpRight, ArrowDownLeft, ArrowDownRight, EyeOff } from 'lucide-react';
+import { Squircle } from '@squircle-js/react';
+import { getSvgPath } from 'figma-squircle';
+
+// SF Pro Font Constants
+const SF_PRO_REGULAR = "'SFProRegular', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif";
+const SF_PRO_MEDIUM = "'SFProMedium', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif";
+const SF_PRO_BOLD = "'SFProBold', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif";
 
 // Add global styles at the top of the file
 const globalStyles = `
@@ -15,16 +22,17 @@ const globalStyles = `
 
   html, body {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     background: #f8f9fa;
   }
 
   #root {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
   }
 `;
 
@@ -194,13 +202,145 @@ function getMeshOptions(palette) {
   ];
 }
 
+// iOS-Style Glass Dock Component with Displacement Effects
+function LiquidGlassDock({ children, style, cornerRadius, uiScale, frameScale, viewMode, isDragging }) {
+  const [shaderId] = useState(() => 'dock-liquid-' + Math.random().toString(36).substr(2, 9));
+  const containerRef = useRef(null);
+  const svgRef = useRef(null);
+  const [displacementImage, setDisplacementImage] = useState('');
+
+  // Generate radial lens displacement map
+  const generateDisplacementMap = useCallback(() => {
+    if (!containerRef.current) return;
+    
+    const rect = containerRef.current.getBoundingClientRect();
+    const width = Math.max(rect.width, 300);
+    const height = Math.max(rect.height, 80);
+    const radius = parseInt(cornerRadius) || 32;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxRadius = Math.min(width, height) / 2;
+    
+        const svgString = `
+      <svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Horizontal displacement gradient -->
+          <linearGradient id="red-${shaderId}" x1="0%" y1="50%" x2="100%" y2="50%">
+            <stop offset="0%" stop-color="red"/>
+            <stop offset="15%" stop-color="hsl(0 100% 52%)"/>
+            <stop offset="50%" stop-color="hsl(0 0% 50%)"/>
+            <stop offset="85%" stop-color="hsl(0 100% 48%)"/>
+            <stop offset="100%" stop-color="hsl(0 100% 46%)"/>
+          </linearGradient>
+          <!-- Vertical displacement gradient -->
+          <linearGradient id="green-${shaderId}" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stop-color="lime"/>
+            <stop offset="15%" stop-color="hsl(120 100% 52%)"/>
+            <stop offset="50%" stop-color="hsl(0 0% 50%)"/>
+            <stop offset="85%" stop-color="hsl(120 100% 48%)"/>
+            <stop offset="100%" stop-color="hsl(120 100% 46%)"/>
+          </linearGradient>
+          <!-- Edge mask for rounded corners -->
+          <mask id="edge-mask-${shaderId}">
+            <rect x="0" y="0" width="${width}" height="${height}" fill="black"/>
+            <rect x="0" y="0" width="${width}" height="${height}" rx="${radius}" fill="white"/>
+          </mask>
+        </defs>
+        <!-- Base neutral -->
+        <rect x="0" y="0" width="${width}" height="${height}" fill="hsl(0 0% 50%)"/>
+        <!-- X displacement -->
+        <rect x="0" y="0" width="${width}" height="${height}" fill="url(#red-${shaderId})" mask="url(#edge-mask-${shaderId})" style="mix-blend-mode: multiply"/>
+        <!-- Y displacement -->
+        <rect x="0" y="0" width="${width}" height="${height}" fill="url(#green-${shaderId})" mask="url(#edge-mask-${shaderId})" style="mix-blend-mode: multiply"/>
+      </svg>
+    `;
+    
+    const encoded = encodeURIComponent(svgString);
+    const dataUri = `data:image/svg+xml,${encoded}`;
+    setDisplacementImage(dataUri);
+  }, [shaderId, cornerRadius, viewMode, isDragging]);
+
+  // Generate displacement map when component mounts or dimensions change
+  useEffect(() => {
+    const timer = setTimeout(generateDisplacementMap, 100);
+    return () => clearTimeout(timer);
+  }, [generateDisplacementMap]);
+
+         // Background distortion displacement filter
+  const createIOSGlassFilter = useCallback(() => {
+    const baseScale = viewMode !== 'full' ? 6 : isDragging ? 8 : 4;
+    const displacementBlur = viewMode !== 'full' ? 0.5 : isDragging ? 0.7 : 0.3;
+    
+    return (
+      <svg ref={svgRef} style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
+        <defs>
+          <filter id={shaderId} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+            {/* Displacement map source */}
+            <feImage
+              x="0"
+              y="0"
+              width="100%"
+              height="100%"
+              href={displacementImage}
+              result="displacementMap"
+            />
+            
+            {/* Radial backdrop distortion */}
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="displacementMap"
+              scale={baseScale}
+              xChannelSelector="R"
+              yChannelSelector="G"
+              result="displaced"
+            />
+            
+            {/* Minimal blur for smooth edges */}
+            <feGaussianBlur in="displaced" stdDeviation={displacementBlur} />
+          </filter>
+        </defs>
+      </svg>
+    );
+  }, [shaderId, displacementImage, viewMode, isDragging]);
+
+  return (
+    <>
+      {/* iOS-style displacement filter */}
+      {createIOSGlassFilter()}
+
+      {/* Dock Container with iOS glass styling */}
+      <div
+        ref={containerRef}
+        style={{
+          ...style,
+          backdropFilter: `blur(4px) url(#${shaderId}) brightness(1.1) saturate(1.3)`,
+          WebkitBackdropFilter: `blur(4px) url(#${shaderId}) brightness(1.1) saturate(1.3)`,
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: cornerRadius || '32px',
+          // boxShadow: `
+          //   0 0 2px 1px rgba(0, 0, 0, 0.15) inset,
+          //   0 0 10px 4px rgba(0, 0, 0, 0.1) inset,
+          //   0px 4px 16px rgba(17, 17, 26, 0.05),
+          //   0px 8px 24px rgba(17, 17, 26, 0.05),
+          //   0px 16px 56px rgba(17, 17, 26, 0.05),
+          //   0px 4px 16px rgba(17, 17, 26, 0.05) inset,
+          //   0px 8px 24px rgba(17, 17, 26, 0.05) inset,
+          //   0px 16px 56px rgba(17, 17, 26, 0.05) inset
+          // `,
+        }}
+      >
+        {children}
+      </div>
+    </>
+  );
+}
+
 export default function IOSHomeScreen() {
   const [customAppName, setCustomAppName] = useState("Your App");
   const [customAppIcon, setCustomAppIcon] = useState(null);
   const [focusMode, setFocusMode] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [wallpaperBlend, setWallpaperBlend] = useState(100);
   const fileInputRef = useRef(null);
   const [showCrop, setShowCrop] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -208,24 +348,161 @@ export default function IOSHomeScreen() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [rawIcon, setRawIcon] = useState(null);
   const [viewMode, setViewMode] = useState('full');
-  const [containerStyle, setContainerStyle] = useState('gradient');
+  const [containerStyle, setContainerStyle] = useState('mesh');
   const [solidColor, setSolidColor] = useState('#ededed');
   const [gradientMain, setGradientMain] = useState('#ededed');
   const [gradientSecondary, setGradientSecondary] = useState('#ededed');
   const [meshColors, setMeshColors] = useState(['#ededed', '#e0e0e0', '#cccccc']);
   const [wallpaperMeshColors, setWallpaperMeshColors] = useState(['#ededed', '#e0e0e0', '#cccccc']);
+  const [wallpaperColors, setWallpaperColors] = useState(['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981']);
   const [palette, setPalette] = useState([
     [237, 237, 237], [200, 200, 200], [180, 180, 180], [220, 220, 220], [255, 255, 255]
   ]);
-  const [wallpaperStyle, setWallpaperStyle] = useState('plain');
   const [frameRatio, setFrameRatio] = useState('4:3');
   const frameRef = useRef(null);
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [selectedSolid, setSelectedSolid] = useState(0);
   const [selectedGradient, setSelectedGradient] = useState(0);
   const [selectedMesh, setSelectedMesh] = useState(0);
-  const [showSolidCustomize, setShowSolidCustomize] = useState(false);
-  const [blendWallpaper, setBlendWallpaper] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [hideOtherIcons, setHideOtherIcons] = useState(false);
+  const [randomizeKey, setRandomizeKey] = useState(0);
+  const [selectedDevice, setSelectedDevice] = useState('black-titanium');
+
+  // UI scaling factor for the larger screen (580/402 ≈ 1.44)
+  const getUIScale = () => {
+    const device = deviceOptions[selectedDevice];
+    // Scale based on screen width ratio
+    return device.screenWidth / 402; // 402 was the original screen width
+  };
+
+  // Device frame options
+  const deviceOptions = {
+    'black-titanium': {
+      name: 'Black Titanium',
+      image: 'src/assets/black-titanium-iphone16pro.png',
+      frameWidth: 629,
+      frameHeight: 1304,
+      screenWidth: 582,
+      screenHeight: 1264
+    },
+    'natural-titanium': {
+      name: 'Natural Titanium',
+      image: 'src/assets/natural-titanium-iphone16pro.png',
+      frameWidth: 629,
+      frameHeight: 1304,
+      screenWidth: 582,
+      screenHeight: 1264
+    }
+  };
+
+  // Define all available apps
+  const allApps = [
+    { name: "Messages", src: "src/assets/icons/imessage.png" },
+    { name: "Calendar", src: "src/assets/icons/calender.png" },
+    { name: "Photos", src: "src/assets/icons/gallery.png" },
+    { name: "Camera", src: "src/assets/icons/camera.png" },
+    { name: "Contacts", src: "src/assets/icons/contacts.png" },
+    { name: "Weather", src: "src/assets/icons/weather.png" },
+    { name: "Notes", src: "src/assets/icons/notes.png" },
+    { name: "App Store", src: "src/assets/icons/appstore.png" },
+    { name: "Books", src: "src/assets/icons/books.png" },
+    { name: "Calculator", src: "src/assets/icons/calculator.png" },
+    { name: "Wallet", src: "src/assets/icons/wallet.png" },
+    { name: "Safari", src: "src/assets/icons/safari.png" },
+    { name: "Reminders", src: "src/assets/icons/reminder.png" },
+    { name: "Apple Music", src: "src/assets/icons/applemusic.png" },
+    { name: "Maps", src: "src/assets/icons/maps.png" },
+    { name: "Home", src: "src/assets/icons/home.png" },
+    { name: "Health", src: "src/assets/icons/health.png" },
+    { name: "Find My", src: "src/assets/icons/findmyiphone.png" },
+    { name: "Clock", src: "src/assets/icons/clock.png" },
+    { name: "FaceTime", src: "src/assets/icons/facetime.png" },
+    { name: "Files", src: "src/assets/icons/files.png" },
+  ];
+
+  // Set default apps for initial view
+  const defaultGridApps = [
+    { name: "Calender", src: "src/assets/icons/calender.png" },
+    { name: "Clock", src: "src/assets/icons/clock.png" },
+    { name: "Facetime", src: "src/assets/icons/facetime.png" },
+    { name: "App Store", src: "src/assets/icons/appstore.png" },
+    { name: "Reminders", src: "src/assets/icons/reminder.png" },
+    { name: "Photos", src: "src/assets/icons/gallery.png" },
+    { name: "Camera", src: "src/assets/icons/camera.png" },
+    { name: "Wallet", src: "src/assets/icons/wallet.png" },
+    { name: "Weather", src: "src/assets/icons/weather.png" },
+    { name: "Notes", src: "src/assets/icons/notes.png" },
+    { name: "Books", src: "src/assets/icons/books.png" },
+    { name: "Maps", src: "src/assets/icons/maps.png" },
+  ];
+  const defaultDockApps = [
+      { name: "Phone", src: "src/assets/icons/call.png" },
+      { name: "Safari", src: "src/assets/icons/safari.png" },
+      { name: "Apple Music", src: "src/assets/icons/applemusic.png" },
+      { name: "iMessage", src: "src/assets/icons/imessage.png" }
+  ];
+
+  const [gridApps, setGridApps] = useState(defaultGridApps);
+  const [dockApps, setDockApps] = useState(defaultDockApps);
+
+  // Function to randomize app positions
+  const randomizeAppPositions = () => {
+    const shuffledGridApps = shuffleArray([...defaultGridApps]);
+    const shuffledDockApps = shuffleArray([...defaultDockApps]);
+    setGridApps(shuffledGridApps);
+    setDockApps(shuffledDockApps);
+    setRandomizeKey(prev => prev + 1); // Force re-render with animation
+  };
+
+  // Responsive frame sizing based on screen size
+  const getResponsiveFrameSize = () => {
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    
+    // Get device dimensions
+    const device = deviceOptions[selectedDevice];
+    const baseWidth = device.frameWidth;
+    const baseHeight = device.frameHeight;
+    
+    // Calculate max scale that fits in viewport with padding
+    const maxWidth = screenWidth > 1200 ? screenWidth * 0.45 : screenWidth * 0.9;
+    const maxHeight = screenHeight * 0.85;
+    
+    const scaleX = maxWidth / baseWidth;
+    const scaleY = maxHeight / baseHeight;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+    
+    return {
+      width: baseWidth * scale,
+      height: baseHeight * scale,
+      scale: scale
+    };
+  };
+
+  const [frameSize, setFrameSize] = useState(getResponsiveFrameSize());
+
+  // Update frame size on window resize or device change
+  useEffect(() => {
+    const handleResize = () => {
+      setFrameSize(getResponsiveFrameSize());
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [selectedDevice]); // Added selectedDevice dependency
+
+  // Update frame size when device changes
+  useEffect(() => {
+    setFrameSize(getResponsiveFrameSize());
+  }, [selectedDevice]);
+
+  // Reset position when view mode changes
+  useEffect(() => {
+    setPosition({ x: 0, y: 0 });
+  }, [viewMode]);
 
   // Frame ratio map with smooth transitions
   const ratioMap = {
@@ -236,11 +513,6 @@ export default function IOSHomeScreen() {
     '9:16': { w: 506, h: 900 },
     '4:3': { w: 1200, h: 900 }
   };
-
-  // Reset position when view mode changes
-  useEffect(() => {
-    setPosition({ x: 0, y: 0 });
-  }, [viewMode]);
 
   // Use Color Thief to extract colors from the uploaded icon
   const extractColorsWithColorThief = (imageUrl) => {
@@ -280,42 +552,7 @@ export default function IOSHomeScreen() {
     }
   }, [customAppIcon]);
 
-  // Randomize gradient colors (palette if possible, fallback to complementary/analogous)
-  function randomizeGradient() {
-    if (!palette.length) return;
-    const shuffled = shuffleArray(palette);
-    const rgbToHex = ([r, g, b]) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-    if (shuffled.length >= 2 && rgbToHex(shuffled[0]) !== rgbToHex(shuffled[1])) {
-      setGradientMain(rgbToHex(shuffled[0]));
-      setGradientSecondary(rgbToHex(shuffled[1]));
-    } else {
-      const main = rgbToHex(shuffled[0]);
-      const useComplementary = Math.random() > 0.5;
-      let secondary = useComplementary ? getComplementary(main) : lighten(main, 0.3);
-      setGradientMain(main);
-      setGradientSecondary(secondary);
-    }
-  }
 
-  // Randomize mesh colors for device container
-  function randomizeMesh() {
-    if (!palette.length) return;
-    const shuffled = shuffleArray(palette);
-    const rgbToHex = ([r, g, b]) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-    let mesh = shuffled.slice(0, 4).map(rgbToHex);
-    while (mesh.length < 4) mesh.push(lighten(rgbToHex(shuffled[0]), 0.2 * mesh.length));
-    setMeshColors(mesh);
-  }
-
-  // Randomize mesh colors for wallpaper
-  function randomizeWallpaperMesh() {
-    if (!palette.length) return;
-    const shuffled = shuffleArray(palette);
-    const rgbToHex = ([r, g, b]) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-    let mesh = shuffled.slice(0, 4).map(rgbToHex);
-    while (mesh.length < 4) mesh.push(lighten(rgbToHex(shuffled[0]), 0.2 * mesh.length));
-    setWallpaperMeshColors(mesh);
-  }
 
   // Get container background based on style and extracted colors
   const getContainerBackground = () => {
@@ -331,43 +568,70 @@ export default function IOSHomeScreen() {
         ),
         `linear-gradient(120deg, ${meshColors[0]} 0%, ${meshColors[1] || meshColors[0]} 100%)`
       ].join(',\n');
+    } else if (containerStyle === 'wallpaper') {
+      const positions = [
+        '15% 25%', '85% 75%', '65% 15%', '75% 85%'
+      ];
+      return [
+        ...wallpaperColors.map((color, i) =>
+          `radial-gradient(circle at ${positions[i % positions.length]}, ${color}40 0%, transparent 60%)`
+        ),
+        `linear-gradient(135deg, ${wallpaperColors[0]}20 0%, ${wallpaperColors[1]}30 25%, ${wallpaperColors[2]}20 50%, ${wallpaperColors[3]}30 100%)`
+      ].join(',\n');
     }
     return solidColor;
   };
 
-  // Get wallpaper background
+  // Get wallpaper background with blend control
   const getWallpaperBackground = () => {
-    if (!blendWallpaper) {
-      return '#18181c';
-    } else {
-      // Blend with frame background using similar style but darker/more transparent
-      if (containerStyle === 'solid') {
-        // Use a darker version of the solid color
-        const hex = solidColor;
-        let c = hex.substring(1);
-        let rgb = [parseInt(c.substring(0,2),16),parseInt(c.substring(2,4),16),parseInt(c.substring(4,6),16)];
-        rgb = rgb.map(x => Math.max(0, Math.round(x * 0.6))); // More generous color pass-through
-        return `#${rgb.map(x=>x.toString(16).padStart(2,'0')).join('')}`;
-      } else if (containerStyle === 'mesh') {
-        // Use mesh colors but darker with more generous pass-through
-        const darkerMeshColors = meshColors.map(color => {
-          let c = color.substring(1);
-          let rgb = [parseInt(c.substring(0,2),16),parseInt(c.substring(2,4),16),parseInt(c.substring(4,6),16)];
-          rgb = rgb.map(x => Math.max(0, Math.round(x * 0.4))); // More generous color pass-through
-          return `#${rgb.map(x=>x.toString(16).padStart(2,'0')).join('')}`;
-        });
-        const positions = [
-          '20% 30%', '80% 70%', '60% 20%', '70% 80%'
-        ];
-        return [
-          ...darkerMeshColors.map((color, i) =>
-            `radial-gradient(circle at ${positions[i % positions.length]}, ${color} 0%, transparent 60%)`
-          ),
-          `linear-gradient(120deg, ${darkerMeshColors[0]} 0%, ${darkerMeshColors[1] || darkerMeshColors[0]} 100%)`
-        ].join(',\n');
-      }
-      return '#18181c';
+    // If wallpaper style is selected, use the iOS wallpaper image
+    if (containerStyle === 'wallpaper') {
+      return `url('src/assets/ios26-light.jpg')`;
     }
+    
+    // If no custom icon uploaded yet, keep wallpaper black
+    if (!customAppIcon) {
+      return '#000000';
+    }
+    
+    // Calculate blend factor: 0% = black, 100% = full frame background
+    const blendFactor = wallpaperBlend / 100;
+    
+    if (blendFactor === 0) {
+      return '#000000'; // Pure black at 0%
+    }
+    
+    // Blend with frame background
+    if (containerStyle === 'solid') {
+      // At 100%: show full frame color, at 0%: show black
+      const hex = solidColor;
+      let c = hex.substring(1);
+      let frameRgb = [parseInt(c.substring(0,2),16),parseInt(c.substring(2,4),16),parseInt(c.substring(4,6),16)];
+      // Interpolate between black (0,0,0) and frame color
+      const blendedRgb = frameRgb.map(x => Math.round(x * blendFactor));
+      return `#${blendedRgb.map(x=>x.toString(16).padStart(2,'0')).join('')}`;
+    } else if (containerStyle === 'mesh') {
+      // At 100%: show full mesh colors, at 0%: show black
+      const blendedMeshColors = meshColors.map(color => {
+        let c = color.substring(1);
+        let frameRgb = [parseInt(c.substring(0,2),16),parseInt(c.substring(2,4),16),parseInt(c.substring(4,6),16)];
+        // Interpolate between black (0,0,0) and frame color
+        const blendedRgb = frameRgb.map(x => Math.round(x * blendFactor));
+        return `#${blendedRgb.map(x=>x.toString(16).padStart(2,'0')).join('')}`;
+      });
+      const positions = [
+        '20% 30%', '80% 70%', '60% 20%', '70% 80%'
+      ];
+      return [
+        ...blendedMeshColors.map((color, i) =>
+          `radial-gradient(circle at ${positions[i % positions.length]}, ${color} 0%, transparent 60%)`
+        ),
+        `linear-gradient(120deg, ${blendedMeshColors[0]} 0%, ${blendedMeshColors[1] || blendedMeshColors[0]} 100%)`
+      ].join(',\n');
+    }
+    // Default: blend between black and dark gray
+    const grayValue = Math.round(24 * blendFactor); // #18181c = rgb(24,24,28)
+    return `rgb(${grayValue}, ${grayValue}, ${grayValue + Math.round(4 * blendFactor)})`;
   };
 
   const handleFileChange = (e) => {
@@ -396,320 +660,6 @@ export default function IOSHomeScreen() {
 
   const handleIconClick = () => {
     fileInputRef.current?.click();
-  };
-
-  const getViewStyles = () => {
-    switch (viewMode) {
-      case 'top-left':
-        return {
-          transform: 'scale(2.5)',
-          transformOrigin: 'top left',
-          marginLeft: '100px',
-          marginTop: '100px'
-        };
-      case 'top-right':
-        return {
-          transform: 'scale(2.5)',
-          transformOrigin: 'top right',
-          marginRight: '100px',
-          marginTop: '100px'
-        };
-      case 'dock-left':
-        return {
-          transform: 'scale(2.5)',
-          transformOrigin: 'bottom left',
-          marginLeft: '100px',
-          marginBottom: '100px'
-        };
-      case 'dock-right':
-        return {
-          transform: 'scale(2.5)',
-          transformOrigin: 'bottom right',
-          marginRight: '100px',
-          marginBottom: '100px'
-        };
-      default:
-        return {};
-    }
-  };
-
-  const renderDock = () => {
-    const dockPositions = {
-      'dock-left': 0,
-      'dock-right': 3
-    };
-
-    const dockApps = [
-      { name: "Phone", src: "src/assets/icons/call.png" },
-      { name: "Safari", src: "src/assets/icons/safari.png" },
-      { name: "Messages", src: "src/assets/icons/imessage.png" },
-      { name: "Music", src: "src/assets/icons/applemusic.png" }
-    ];
-
-    return (
-      <div style={{
-        margin: '0 auto 0',
-        width: '98%',
-        height: '85px',
-        background: focusMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)',
-        backdropFilter: 'blur(30px) saturate(180%)',
-        borderRadius: '32px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '26px',
-        border: '0.5px solid rgba(255,255,255,0.2)',
-        padding: '0 12px',
-        position: 'relative',
-        zIndex: focusMode ? 20 : 1
-      }}>
-        {dockApps.map((app, index) => {
-          const isCustomApp = index === dockPositions[viewMode];
-          const style = {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            position: 'relative',
-            zIndex: isCustomApp ? (focusMode ? 25 : 1) : 1,
-          };
-
-          if (isCustomApp && focusMode) {
-            style.filter = 'brightness(1.1)';
-            style.transform = 'scale(1.02)';
-            style.transition = 'all 0.3s ease';
-          }
-
-          return isCustomApp ? (
-            <div key={index} style={style}>
-              <div
-                onClick={handleIconClick}
-                style={{
-                  width: '62px',
-                  height: '62px',
-                  borderRadius: '14px',
-                  backgroundColor: customAppIcon ? 'transparent' : '#34C759',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column',
-                  border: customAppIcon ? 'none' : '2px dashed rgba(255,255,255,0.5)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  padding: 0
-                }}
-              >
-                {customAppIcon ? (
-                  <img
-                    src={customAppIcon}
-                    alt={customAppName}
-                    style={{
-                      width: '62px',
-                      height: '62px',
-                      borderRadius: '14px',
-                      objectFit: 'cover',
-                      imageRendering: 'auto',
-                      display: 'block',
-                    }}
-                  />
-                ) : (
-                  <>
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      position: 'relative'
-                    }}>
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '16px',
-                        height: '2px',
-                        background: 'white'
-                      }}></div>
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '2px',
-                        height: '16px',
-                        background: 'white'
-                      }}></div>
-                    </div>
-                    <span style={{
-                      color: 'white',
-                      fontSize: '11px',
-                      marginTop: '2px',
-                      fontWeight: '500'
-                    }}>TAP</span>
-                  </>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div key={index} style={{
-              ...style,
-              opacity: focusMode ? 0.4 : 1,
-              transition: 'all 0.3s ease'
-            }}>
-              <AppIcon 
-                name={app.name} 
-                src={app.src}
-                nolabel={true}
-              />
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderAppGrid = () => {
-    const positions = {
-      'full': 8, // 9th position (index 8)
-      'top-left': 0, // First position
-      'top-right': 3, // Fourth position
-    };
-
-    // Create array of default app icons
-    const defaultApps = [
-      { name: "Messages", src: "src/assets/icons/imessage.png" },
-      { name: "Calendar", src: "src/assets/icons/calender.png" },
-      { name: "Photos", src: "src/assets/icons/gallery.png" },
-      { name: "Camera", src: "src/assets/icons/clock.png" },
-      { name: "Mail", src: "src/assets/icons/mail.png" },
-      { name: "Weather", src: "src/assets/icons/weather.png" },
-      { name: "Notes", src: "src/assets/icons/fitness.png" },
-      { name: "App Store", src: "src/assets/icons/appstore.png" }
-    ];
-
-    return (
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '16px',
-        rowGap: '24px',
-        marginTop: '35px',
-        justifyItems: 'center',
-        position: 'relative',
-        zIndex: focusMode ? 20 : 1
-      }}>
-        {Array(9).fill(null).map((_, index) => {
-          const isCustomApp = index === positions[viewMode];
-          const style = {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            position: 'relative',
-            zIndex: isCustomApp ? (focusMode ? 25 : 1) : 1,
-          };
-
-          if (isCustomApp && focusMode) {
-            style.filter = 'brightness(1.1)';
-            style.transform = 'scale(1.02)';
-            style.transition = 'all 0.3s ease';
-          }
-
-          return isCustomApp ? (
-            <div key={index} style={style}>
-              <div
-                onClick={handleIconClick}
-                style={{
-                  width: '62px',
-                  height: '62px',
-                  borderRadius: '14px',
-                  backgroundColor: customAppIcon ? 'transparent' : '#34C759',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexDirection: 'column',
-                  border: customAppIcon ? 'none' : '2px dashed rgba(255,255,255,0.5)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  padding: 0
-                }}
-              >
-                {customAppIcon ? (
-                  <img
-                    src={customAppIcon}
-                    alt={customAppName}
-                    style={{
-                      width: '62px',
-                      height: '62px',
-                      borderRadius: '14px',
-                      objectFit: 'cover',
-                      imageRendering: 'auto',
-                      display: 'block',
-                    }}
-                  />
-                ) : (
-                  <>
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      position: 'relative'
-                    }}>
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '16px',
-                        height: '2px',
-                        background: 'white'
-                      }}></div>
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '2px',
-                        height: '16px',
-                        background: 'white'
-                      }}></div>
-                    </div>
-                    <span style={{
-                      color: 'white',
-                      fontSize: '11px',
-                      marginTop: '2px',
-                      fontWeight: '500'
-                    }}>TAP</span>
-                  </>
-                )}
-              </div>
-              <span style={{
-                color: 'white',
-                fontSize: '12px',
-                marginTop: '6px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                textAlign: 'center',
-                maxWidth: '60px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                textShadow: focusMode ? '0 0 8px rgba(255,255,255,0.3)' : 'none'
-              }}>
-                {customAppName}
-              </span>
-            </div>
-          ) : (
-            <div key={index} style={{
-              ...style,
-              opacity: focusMode ? 0.4 : 1,
-              transition: 'all 0.3s ease'
-            }}>
-              <AppIcon 
-                name={defaultApps[index]?.name} 
-                src={defaultApps[index]?.src}
-              />
-            </div>
-          );
-        })}
-      </div>
-    );
   };
 
   const handleDragStart = (e) => {
@@ -747,130 +697,1366 @@ export default function IOSHomeScreen() {
     };
   }, [isDragging, dragStart]);
 
-  // Download frame as PNG with improved quality
+  const renderDock = () => {
+    const dockPositions = {
+      'dock-left': 0,
+      'dock-right': 3
+    };
+
+    let dockRenderCounter = 0;
+    const uiScale = getUIScale();
+
+    return (
+      <LiquidGlassDock
+        cornerRadius={`${32 * uiScale * frameSize.scale}px`}
+        uiScale={uiScale}
+        frameScale={frameSize.scale}
+        viewMode={viewMode}
+        isDragging={isDragging}
+        style={{
+          margin: '0 auto 0',
+          width: '98%',
+          height: `${85 * uiScale * frameSize.scale}px`,
+          position: 'relative',
+          zIndex: focusMode ? 20 : 1,
+          opacity: focusMode ? 0.9 : 1,
+          padding: `0 ${12 * uiScale * frameSize.scale}px`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: `${26 * uiScale * frameSize.scale}px`,
+          width: '100%',
+          height: '100%'
+        }}>
+        {Array(4).fill(null).map((_, index) => {
+          const isCustomApp = index === dockPositions[viewMode];
+          const iconSize = 62 * uiScale * frameSize.scale;
+          
+          if (isCustomApp) {
+            return (
+              <div key={index} style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                position: 'relative',
+                zIndex: isCustomApp ? (focusMode ? 25 : 1) : 1,
+                filter: focusMode ? 'brightness(1.1)' : 'none'
+              }}>
+                <Squircle
+                  cornerRadius={16 * uiScale * frameSize.scale}
+                  cornerSmoothing={1}
+                  width={iconSize}
+                  height={iconSize}
+                  onClick={!customAppIcon ? handleIconClick : undefined}
+                  style={{
+                    backgroundColor: customAppIcon ? 'transparent' : '#34C759',
+                    cursor: customAppIcon ? 'default' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    border: customAppIcon ? 'none' : '2px dashed rgba(255,255,255,0.5)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    padding: 0
+                  }}
+                >
+                  {customAppIcon ? (
+                    <img
+                      src={customAppIcon}
+                      alt={customAppName}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        imageRendering: 'auto',
+                        display: 'block',
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <div style={{
+                        width: `${24 * uiScale * frameSize.scale}px`,
+                        height: `${24 * uiScale * frameSize.scale}px`,
+                        position: 'relative'
+                      }}>
+                        <div style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: `${16 * uiScale * frameSize.scale}px`,
+                          height: `${2 * uiScale * frameSize.scale}px`,
+                          background: 'white'
+                        }}></div>
+                        <div style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: `${2 * uiScale * frameSize.scale}px`,
+                          height: `${16 * uiScale * frameSize.scale}px`,
+                          background: 'white'
+                        }}></div>
+                      </div>
+                      <span style={{
+                        color: 'white',
+                        fontSize: `${11 * uiScale * frameSize.scale}px`,
+                        marginTop: `${2 * uiScale * frameSize.scale}px`,
+                        fontWeight: '500'
+                      }}>TAP</span>
+                    </>
+                  )}
+                </Squircle>
+              </div>
+            );
+          } else {
+            const app = dockApps[dockRenderCounter++];
+            return (
+              <div key={`dock-${index}-${randomizeKey}`} style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                opacity: hideOtherIcons ? 0 : (focusMode ? 0.4 : 1),
+                visibility: hideOtherIcons ? 'hidden' : 'visible',
+                pointerEvents: hideOtherIcons ? 'none' : 'auto',
+                transition: 'opacity 0.3s ease'
+              }}>
+                <AppIcon 
+                  name={app?.name} 
+                  src={app?.src}
+                  nolabel={true}
+                  size={iconSize}
+                  scale={uiScale * frameSize.scale}
+                />
+              </div>
+            );
+          }
+        })}
+        </div>
+      </LiquidGlassDock>
+    );
+  };
+
+  const renderAppGrid = () => {
+    const positions = {
+      'full': gridApps.length,
+      'top-left': 0,
+      'top-right': 3,
+    };
+
+    let appRenderCounter = 0;
+    const uiScale = getUIScale();
+    const iconSize = 62 * uiScale * frameSize.scale;
+    const gridGap = 16 * uiScale * frameSize.scale;
+    const rowGap = 24 * uiScale * frameSize.scale;
+
+    return (
+      <div className="app-grid" style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: `${gridGap}px`,
+        rowGap: `${rowGap}px`,
+        marginTop: `${35 * uiScale * frameSize.scale}px`,
+        justifyItems: 'center',
+        position: 'relative',
+        zIndex: focusMode ? 20 : 1
+      }}>
+        {Array(gridApps.length + 1).fill(null).map((_, index) => {
+          const isCustomApp = index === positions[viewMode];
+
+          if (isCustomApp) {
+            return (
+              <div key={index} style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                position: 'relative',
+                zIndex: isCustomApp ? (focusMode ? 25 : 1) : 1,
+                filter: focusMode ? 'brightness(1.1)' : 'none',
+                transition: 'filter 0.3s ease'
+              }}>
+                <Squircle
+                  cornerRadius={16 * uiScale * frameSize.scale}
+                  cornerSmoothing={1}
+                  width={iconSize}
+                  height={iconSize}
+                  onClick={!customAppIcon ? handleIconClick : undefined}
+                  style={{
+                    backgroundColor: customAppIcon ? 'transparent' : '#34C759',
+                    cursor: customAppIcon ? 'default' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    border: customAppIcon ? 'none' : '2px dashed rgba(255,255,255,0.5)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    padding: 0
+                  }}
+                >
+                  {customAppIcon ? (
+                    <img
+                      src={customAppIcon}
+                      alt={customAppName}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        imageRendering: 'auto',
+                        display: 'block',
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <div style={{
+                        width: `${24 * uiScale * frameSize.scale}px`,
+                        height: `${24 * uiScale * frameSize.scale}px`,
+                        position: 'relative'
+                      }}>
+                        <div style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: `${16 * uiScale * frameSize.scale}px`,
+                          height: `${2 * uiScale * frameSize.scale}px`,
+                          background: 'white'
+                        }}></div>
+                        <div style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: `${2 * uiScale * frameSize.scale}px`,
+                          height: `${16 * uiScale * frameSize.scale}px`,
+                          background: 'white'
+                        }}></div>
+                      </div>
+                      <span style={{
+                        color: 'white',
+                        fontSize: `${11 * uiScale * frameSize.scale}px`,
+                        marginTop: `${2 * uiScale * frameSize.scale}px`,
+                        fontWeight: '500'
+                      }}>TAP</span>
+                    </>
+                  )}
+                </Squircle>
+                <span style={{
+                  color: 'white',
+                  fontSize: `${12 * uiScale * frameSize.scale}px`,
+                  marginTop: `${6 * uiScale * frameSize.scale}px`,
+                  fontFamily: SF_PRO_REGULAR,
+                  textAlign: 'center',
+                  maxWidth: `${60 * uiScale * frameSize.scale}px`,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  textShadow: focusMode ? '0 0 8px rgba(255,255,255,0.3)' : 'none'
+                }}>
+                  {customAppName}
+                </span>
+              </div>
+            );
+          } else {
+            const app = gridApps[appRenderCounter++];
+            return (
+              <div key={`${index}-${randomizeKey}`} style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                opacity: hideOtherIcons ? 0 : (focusMode ? 0.4 : 1),
+                visibility: hideOtherIcons ? 'hidden' : 'visible',
+                pointerEvents: hideOtherIcons ? 'none' : 'auto',
+                transition: 'opacity 0.3s ease'
+              }}>
+                <AppIcon 
+                  name={app?.name} 
+                  src={app?.src}
+                  size={iconSize}
+                  scale={uiScale * frameSize.scale}
+                />
+              </div>
+            );
+          }
+        })}
+      </div>
+    );
+  };
+
+
+
+  // Export the frame exactly as-displayed using dom-to-image-more
   const handleDownload = async () => {
     if (!frameRef.current) return;
-    
-    // Create a temporary container to render the frame at full resolution
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.top = '-9999px';
-    document.body.appendChild(tempContainer);
-    
-    // Clone the frame and its contents
-    const frameClone = frameRef.current.cloneNode(true);
-    tempContainer.appendChild(frameClone);
-    
-    // Set the clone to the target size
-    const { w, h } = ratioMap[frameRatio];
-    frameClone.style.width = `${w}px`;
-    frameClone.style.height = `${h}px`;
-    
-    // Ensure the app icon is rendered at full resolution
-    const appIcon = frameClone.querySelector('img[alt="Preview"]');
-    if (appIcon && customAppIcon) {
-      appIcon.style.width = '62px';
-      appIcon.style.height = '62px';
-      appIcon.style.imageRendering = 'pixelated';
-    }
-    
+
     try {
-      const canvas = await html2canvas(frameClone, {
-        scale: 3, // Higher scale for better quality
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        logging: false,
-        imageTimeout: 0,
-        onclone: (clonedDoc) => {
-          // Ensure all images are loaded
-          const images = clonedDoc.getElementsByTagName('img');
-          return Promise.all(Array.from(images).map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
-              img.onload = resolve;
-              img.onerror = resolve;
-            });
-          }));
+      // Ensure all fonts are loaded before capture
+      await document.fonts.ready;
+      
+      // Add a small delay to ensure everything is fully rendered
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const dataUrl = await domtoimage.toPng(frameRef.current, {
+        quality: 1.0,
+        pixelRatio: 3,
+        bgcolor: 'transparent',
+        style: {
+          // Force font rendering to be explicit
+          fontDisplay: 'block',
+          fontSmooth: 'always',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale'
         }
       });
-      
-      // Convert to PNG with maximum quality
+
       const link = document.createElement('a');
       const base = uploadedFileName || 'appicon';
       link.download = `${base}mockup.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
+      link.href = dataUrl;
       link.click();
-    } finally {
-      // Clean up
-      document.body.removeChild(tempContainer);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Download failed. Please try again.');
     }
   };
 
   return (
     <>
       <style>{globalStyles}</style>
-      <div style={{
+      <div className="app-container" style={{
         display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
+        height: '100vh',
         background: '#f8f9fa',
-        padding: '40px'
+        overflow: 'hidden'
       }}>
-        {/* Header Section */}
-        <div style={{
-          textAlign: 'center',
-          marginBottom: '40px'
+        {/* Right Sidebar */}
+        <div className="sidebar" style={{
+          width: '340px',
+          height: '100vh',
+          background: '#ffffff',
+          borderLeft: '1px solid #e2e8f0',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'fixed',
+          right: 0,
+          top: 0,
+          zIndex: 100,
+          boxShadow: '-2px 0 10px rgba(0,0,0,0.05)'
         }}>
-          <h1 style={{
-            fontSize: '36px',
-            fontWeight: '700',
-            color: '#1a1a1a',
-            marginBottom: '16px',
-            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
+          {/* Sidebar Header */}
+          <div style={{
+            padding: '24px 24px 20px 24px',
+            borderBottom: '1px solid #e2e8f0',
+            background: '#ffffff'
           }}>
-            iOS App Icon Mockup Generator
-          </h1>
-          <p style={{
-            fontSize: '18px',
-            color: '#666',
-            maxWidth: '600px',
-            margin: '0 auto',
-            lineHeight: '1.5',
-            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
+            <h1 style={{
+              margin: '0 0 8px 0',
+              fontSize: '24px',
+              fontWeight: '700',
+              color: '#1a1a1a',
+              fontFamily: SF_PRO_BOLD,
+              lineHeight: '1.2'
+            }}>
+              iOS App Mockup
+            </h1>
+            <p style={{
+              margin: '0',
+              fontSize: '14px',
+              color: '#666',
+              fontFamily: SF_PRO_REGULAR,
+              lineHeight: '1.4'
+            }}>
+              Create beautiful app icon mockups
+            </p>
+          </div>
+
+          {/* Scrollable Content */}
+          <div style={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden'
           }}>
-            Create beautiful iOS app icon mockups. Upload your icon, customize the name, and see how it looks on a realistic iPhone interface.
-          </p>
+            
+            {/* App Details Section */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '16px'
+              }}>
+                <Pencil size={16} color="#475569" strokeWidth={2} />
+                <h3 style={{
+                  margin: '0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>App Details</h3>
+              </div>
+              
+              {/* App Name */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={customAppName}
+                  onChange={(e) => setCustomAppName(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 14px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '10px',
+                    fontSize: '14px',
+                    fontFamily: SF_PRO_REGULAR,
+                    outline: 'none',
+                    transition: 'all 0.2s ease',
+                    boxSizing: 'border-box',
+                    background: '#ffffff'
+                  }}
+                  maxLength={12}
+                  placeholder="Enter app name"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#209AF7';
+                    e.target.style.outline = 'none';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                  }}
+                />
+              </div>
+
+              {/* App Icon */}
+              <div style={{ marginBottom: customAppIcon ? '16px' : '0' }}>
+                <button
+                  onClick={handleIconClick}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: '#209AF7',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    fontFamily: SF_PRO_MEDIUM,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    justifyContent: 'center',
+                    transition: 'background-color 0.2s ease',
+                    outline: 'none'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1B87DB'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#209AF7'}
+                >
+                  <Upload size={16} strokeWidth={2} /> Upload Icon
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                />
+              </div>
+
+              {/* Icon Preview */}
+              {customAppIcon && (
+                <div style={{
+                  padding: '16px',
+                  background: '#f1f5f9',
+                  borderRadius: '12px',
+                  textAlign: 'center',
+                  border: '1px solid #e2e8f0'
+                }}>
+                  <Squircle
+                    cornerRadius={16}
+                    cornerSmoothing={1}
+                    width={56}
+                    height={56}
+                    style={{
+                      margin: '0 auto 8px auto',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}
+                  >
+                    <img
+                      src={customAppIcon}
+                      alt="Preview"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </Squircle>
+                  <p style={{
+                    margin: '0',
+                    fontSize: '13px',
+                    color: '#64748b',
+                    fontFamily: SF_PRO_REGULAR,
+                    fontWeight: '400'
+                  }}>Preview</p>
+                </div>
+              )}
+            </div>
+
+
+
+            {/* Display Section */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '16px'
+              }}>
+                <Monitor size={16} color="#475569" strokeWidth={2} />
+                <h3 style={{
+                  margin: '0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>Display</h3>
+              </div>
+
+              {/* View Mode */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>
+                  View Mode
+                </label>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(2, 1fr)', 
+                  gap: '8px' 
+                }}>
+                  {[
+                    { id: 'full', label: 'Full View', icon: <Frame size={14}/> },
+                    { id: 'top-left', label: 'Top Left', icon: <ArrowUpLeft size={14} /> },
+                    { id: 'top-right', label: 'Top Right', icon: <ArrowUpRight size={14} /> },
+                    { id: 'dock-left', label: 'Dock Left', icon: <ArrowDownLeft size={14} /> },
+                    { id: 'dock-right', label: 'Dock Right', icon: <ArrowDownRight size={14} /> }
+                  ].map(mode => (
+                    <button
+                      key={mode.id}
+                      onClick={() => setViewMode(mode.id)}
+                      style={{
+                        padding: '10px 8px',
+                        background: viewMode === mode.id ? '#209AF7' : '#f8fafc',
+                        color: viewMode === mode.id ? 'white' : '#374151',
+                        border: '1px solid ' + (viewMode === mode.id ? '#209AF7' : '#e2e8f0'),
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontFamily: SF_PRO_REGULAR,
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'background-color 0.2s ease',
+                        outline: 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (viewMode !== mode.id) {
+                          e.target.style.backgroundColor = '#f1f5f9';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (viewMode !== mode.id) {
+                          e.target.style.backgroundColor = '#f8fafc';
+                        }
+                      }}
+                    >
+                      {mode.icon}
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Display Controls */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                {/* Focus Mode Toggle */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    {focusMode ? <Sun size={14} strokeWidth={2} color="#374151" /> : <Moon size={14} strokeWidth={2} color="#374151" />}
+                    <label style={{
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      fontFamily: SF_PRO_MEDIUM,
+                      cursor: 'pointer'
+                    }} onClick={() => setFocusMode(!focusMode)}>
+                      Focus Mode
+                    </label>
+                  </div>
+                  <div 
+                    onClick={() => setFocusMode(!focusMode)}
+                    style={{
+                      width: '44px',
+                      height: '24px',
+                      borderRadius: '12px',
+                      background: focusMode ? '#209AF7' : '#e2e8f0',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      background: 'white',
+                      position: 'absolute',
+                      top: '2px',
+                      left: focusMode ? '22px' : '2px',
+                      transition: 'left 0.2s ease',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Hide Icons Toggle */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <EyeOff size={14} strokeWidth={2} color="#374151" />
+                    <label style={{
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      fontFamily: SF_PRO_MEDIUM,
+                      cursor: 'pointer'
+                    }} onClick={() => setHideOtherIcons(!hideOtherIcons)}>
+                      Hide Other Icons
+                    </label>
+                  </div>
+                  <div 
+                    onClick={() => setHideOtherIcons(!hideOtherIcons)}
+                    style={{
+                      width: '44px',
+                      height: '24px',
+                      borderRadius: '12px',
+                      background: hideOtherIcons ? '#209AF7' : '#e2e8f0',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      background: 'white',
+                      position: 'absolute',
+                      top: '2px',
+                      left: hideOtherIcons ? '22px' : '2px',
+                      transition: 'left 0.2s ease',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Randomize Button */}
+                <button
+                  onClick={randomizeAppPositions}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                    color: '#374151',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontFamily: SF_PRO_MEDIUM,
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'background 0.2s ease',
+                    outline: 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'linear-gradient(135deg, #e2e8f0 0%, #d1d5db 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
+                  }}
+                >
+                  <Grip size={16} strokeWidth={2} />
+                  Randomise App Icons
+                </button>
+              </div>
+            </div>
+
+            {/* Background Section */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '16px'
+              }}>
+                <Paintbrush size={16} color="#475569" strokeWidth={2} />
+                <h3 style={{
+                  margin: '0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>Background</h3>
+              </div>
+
+              {/* Style Selector */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>
+                  Style
+                </label>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '8px'
+                }}>
+                  {[
+                    { id: 'solid', label: 'Solid' },
+                    { id: 'mesh', label: 'Gradient' },
+                    { id: 'wallpaper', label: 'Wallpaper' },
+                  ].map(style => (
+                    <button
+                      key={style.id}
+                      onClick={() => setContainerStyle(style.id)}
+                      style={{
+                        padding: '10px 12px',
+                        background: containerStyle === style.id ? '#209AF7' : '#f8fafc',
+                        color: containerStyle === style.id ? 'white' : '#374151',
+                        border: '1px solid ' + (containerStyle === style.id ? '#209AF7' : '#e2e8f0'),
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontFamily: SF_PRO_REGULAR,
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        transition: 'background-color 0.2s ease',
+                        outline: 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (containerStyle !== style.id) {
+                          e.target.style.backgroundColor = '#f1f5f9';
+                        } else {
+                          e.target.style.backgroundColor = '#1B87DB';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (containerStyle !== style.id) {
+                          e.target.style.backgroundColor = '#f8fafc';
+                        } else {
+                          e.target.style.backgroundColor = '#209AF7';
+                        }
+                      }}
+                    >
+                      {style.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Color Controls */}
+              <div style={{ marginBottom: '16px' }}>
+                {containerStyle === 'solid' && (
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px',
+                      fontFamily: SF_PRO_MEDIUM
+                    }}>
+                      Color
+                    </label>
+                    <div style={{
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'center',
+                      padding: '12px',
+                      background: '#f8fafc',
+                      borderRadius: '12px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <input
+                        type="color"
+                        value={solidColor}
+                        onChange={e => setSolidColor(e.target.value)}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          padding: '0',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          outline: 'none'
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={solidColor}
+                        onChange={e => setSolidColor(e.target.value)}
+                        style={{
+                          flex: 1,
+                          padding: '8px 12px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontFamily: 'SF Mono, Monaco, monospace',
+                          outline: 'none',
+                          background: 'white'
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {containerStyle === 'mesh' && (
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px',
+                      fontFamily: SF_PRO_MEDIUM
+                    }}>
+                      Gradient Options
+                    </label>
+                    <div style={{
+                      display: 'flex',
+                      gap: '8px',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      marginBottom: '10px'
+                    }}>
+                      {getMeshOptions(palette).map((mesh, i) => {
+                        const positions = [
+                          '20% 30%', '80% 70%', '60% 20%', '70% 80%'
+                        ];
+                        const meshBg = [
+                          ...mesh.map((color, i) =>
+                            `radial-gradient(circle at ${positions[i % positions.length]}, ${color} 0%, transparent 70%)`
+                          ),
+                          `linear-gradient(120deg, ${mesh[0]} 0%, ${mesh[1] || mesh[0]} 100%)`
+                        ].join(', ');
+                        return (
+                          <button
+                            key={mesh.join('-')}
+                            onClick={() => { setMeshColors(mesh); setSelectedMesh(i); }}
+                            style={{
+                              width: '44px',
+                              height: '32px',
+                              borderRadius: '8px',
+                              background: meshBg,
+                              border: '1px solid #d1d5db',
+                              boxShadow: selectedMesh === i ? '0 0 0 2px rgba(32,154,247,0.55)' : 'none',
+                              cursor: 'pointer',
+                              outline: 'none',
+                              transition: 'border-color 0.2s ease',
+                              overflow: 'hidden'
+                            }}
+                          />
+                        );
+                      })}
+                      <button
+                        onClick={() => {
+                          const mesh = getMeshOptions(palette)[selectedMesh];
+                          setMeshColors(shuffleArray(mesh));
+                        }}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          background: '#f8fafc',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'background-color 0.2s ease',
+                          outline: 'none',
+                          padding: '0',
+                          margin: '0',
+                          font: 'inherit',
+                          color: 'inherit',
+                          textDecoration: 'none',
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'none',
+                          appearance: 'none'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
+                        title="Randomize Gradients"
+                      >
+                        <Shuffle size={16} strokeWidth={2} color="#374151" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {containerStyle === 'wallpaper' && (
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px',
+                      fontFamily: SF_PRO_MEDIUM
+                    }}>
+                      Wallpaper Options
+                    </label>
+                    <div style={{
+                      display: 'flex',
+                      gap: '8px',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      marginBottom: '10px'
+                    }}>
+                      {[
+                        ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981'], // Blue to Purple to Orange to Green
+                        ['#667eea', '#764ba2', '#f093fb', '#f5576c'], // Cool Purple Gradient
+                        ['#4facfe', '#00f2fe', '#43e97b', '#38f9d7']  // Ocean Blue to Mint
+                      ].map((colors, i) => {
+                        const positions = [
+                          '15% 25%', '85% 75%', '65% 15%', '75% 85%'
+                        ];
+                        const wallpaperBg = [
+                          ...colors.map((color, idx) =>
+                            `radial-gradient(circle at ${positions[idx % positions.length]}, ${color}40 0%, transparent 60%)`
+                          ),
+                          `linear-gradient(135deg, ${colors[0]}20 0%, ${colors[1]}30 25%, ${colors[2]}20 50%, ${colors[3]}30 100%)`
+                        ].join(', ');
+                        return (
+                          <button
+                            key={colors.join('-')}
+                            onClick={() => setWallpaperColors(colors)}
+                            style={{
+                              width: '44px',
+                              height: '32px',
+                              borderRadius: '8px',
+                              background: wallpaperBg,
+                              border: '1px solid #d1d5db',
+                              boxShadow: JSON.stringify(wallpaperColors) === JSON.stringify(colors) ? '0 0 0 2px rgba(32,154,247,0.55)' : 'none',
+                              cursor: 'pointer',
+                              outline: 'none',
+                              transition: 'border-color 0.2s ease',
+                              overflow: 'hidden'
+                            }}
+                          />
+                        );
+                      })}
+                      <button
+                        onClick={() => {
+                          const colors = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981'];
+                          setWallpaperColors(shuffleArray(colors));
+                        }}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          background: '#f8fafc',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'background-color 0.2s ease',
+                          outline: 'none'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
+                        title="Randomize Wallpaper Colors"
+                      >
+                        <Shuffle size={16} strokeWidth={2} color="#374151" />
+                      </button>
+                    </div>
+                    <div style={{
+                      padding: '12px',
+                      background: '#f1f5f9',
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                      marginTop: '8px'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '6px'
+                      }}>
+                        <div style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '6px',
+                          backgroundImage: `url('src/assets/ios26-light.jpg')`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          border: '1px solid #d1d5db'
+                        }} />
+                        <span style={{
+                          fontSize: '13px',
+                          color: '#475569',
+                          fontFamily: SF_PRO_MEDIUM
+                        }}>iOS 26 Wallpaper</span>
+                      </div>
+                      <p style={{
+                        margin: '0',
+                        fontSize: '12px',
+                        color: '#64748b',
+                        fontFamily: SF_PRO_REGULAR,
+                        lineHeight: '1.4'
+                      }}>
+                        Frame colors adapt to complement the wallpaper
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Wallpaper Blend - Only show when not using wallpaper style */}
+              {containerStyle !== 'wallpaper' && (
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#374151',
+                    marginBottom: '8px',
+                    fontFamily: SF_PRO_MEDIUM
+                  }}>
+                    Wallpaper Blend
+                  </label>
+                <div style={{
+                  padding: '12px',
+                  background: '#f8fafc',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '8px'
+                  }}>
+                    <span style={{
+                      fontSize: '12px',
+                      color: '#64748b',
+                      fontFamily: SF_PRO_REGULAR,
+                      minWidth: '28px'
+                    }}>0%</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={wallpaperBlend}
+                      onChange={(e) => setWallpaperBlend(Number(e.target.value))}
+                      style={{
+                        flex: 1,
+                        height: '4px',
+                        WebkitAppearance: 'none',
+                        background: `linear-gradient(to right, #0f172a 0%, ${palette.length > 0 ? rgbToHex(palette[0]) : '#209AF7'} 100%)`,
+                        borderRadius: '2px',
+                        outline: 'none',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <span style={{
+                      fontSize: '12px',
+                      color: '#64748b',
+                      fontFamily: SF_PRO_REGULAR,
+                      minWidth: '28px',
+                      textAlign: 'right'
+                    }}>100%</span>
+                  </div>
+                </div>
+              </div>
+              )}
+            </div>
+
+            {/* Device Selection Section */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '16px'
+              }}>
+                <Frame size={16} color="#475569" strokeWidth={2} />
+                <h3 style={{
+                  margin: '0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>Device Frame</h3>
+              </div>
+
+              {/* Device Options */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>
+                  iPhone 16 Pro
+                </label>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '8px'
+                }}>
+                  {Object.entries(deviceOptions).map(([key, device]) => (
+                    <button
+                      key={key}
+                      onClick={() => setSelectedDevice(key)}
+                      style={{
+                        padding: '12px 8px',
+                        background: selectedDevice === key ? '#209AF7' : '#f8fafc',
+                        color: selectedDevice === key ? 'white' : '#374151',
+                        border: '1px solid ' + (selectedDevice === key ? '#209AF7' : '#e2e8f0'),
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontFamily: SF_PRO_REGULAR,
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        transition: 'all 0.2s ease',
+                        outline: 'none',
+                        textAlign: 'center'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (selectedDevice !== key) {
+                          e.target.style.backgroundColor = '#f1f5f9';
+                        } else {
+                          e.target.style.backgroundColor = '#1B87DB';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedDevice !== key) {
+                          e.target.style.backgroundColor = '#f8fafc';
+                        } else {
+                          e.target.style.backgroundColor = '#209AF7';
+                        }
+                      }}
+                    >
+                      {device.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Export Section */}
+            <div style={{
+              padding: '20px 24px 32px 24px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '16px'
+              }}>
+                <Download size={16} color="#475569" strokeWidth={2} />
+                <h3 style={{
+                  margin: '0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>Export</h3>
+              </div>
+
+              {/* Frame Ratio */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>
+                  Frame Ratio
+                </label>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '6px'
+                }}>
+                  {Object.keys(ratioMap).map(ratio => (
+                    <button
+                      key={ratio}
+                      onClick={() => setFrameRatio(ratio)}
+                      style={{
+                        padding: '10px 6px',
+                        background: frameRatio === ratio ? '#209AF7' : '#f8fafc',
+                        color: frameRatio === ratio ? 'white' : '#374151',
+                        border: '1px solid ' + (frameRatio === ratio ? '#209AF7' : '#e2e8f0'),
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontFamily: SF_PRO_REGULAR,
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        transition: 'background-color 0.2s ease',
+                        outline: 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (frameRatio !== ratio) {
+                          e.target.style.backgroundColor = '#f1f5f9';
+                        } else {
+                          e.target.style.backgroundColor = '#1B87DB';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (frameRatio !== ratio) {
+                          e.target.style.backgroundColor = '#f8fafc';
+                        } else {
+                          e.target.style.backgroundColor = '#209AF7';
+                        }
+                      }}
+                    >
+                      {ratio}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Download Button */}
+              <button
+                onClick={handleDownload}
+                style={{
+                  width: '100%',
+                  padding: '14px 20px',
+                  background: '#209AF7',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  fontFamily: SF_PRO_MEDIUM,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'background-color 0.2s ease',
+                  outline: 'none'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#1B87DB'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#209AF7'}
+              >
+                <Download size={16} strokeWidth={2} /> Download Mockup
+              </button>
+            </div>
+          </div>
         </div>
 
-      <div style={{
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '40px',
-        alignItems: 'center',
-        justifyContent: 'center',
-          flex: 1
+        {/* Main Content Area */}
+        <div className="main-content" style={{
+          marginRight: '340px',
+          flex: 1,
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+          background: '#f8f9fa'
         }}>
           {/* Device Frame Container with Framer Motion */}
           <motion.div
             ref={frameRef}
+            className="device-frame-container"
             style={{
-          position: 'relative',
-              width: ratioMap[frameRatio].w,
-              height: ratioMap[frameRatio].h,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          overflow: 'hidden',
+              position: 'relative',
+              width: ratioMap[frameRatio].w * 0.9,  // Increased size for better visibility
+              height: ratioMap[frameRatio].h * 0.9,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden',
               background: getContainerBackground(),
-          borderRadius: '30px',
+              borderRadius: '30px',
               padding: '20px',
-              transition: 'background 0.7s cubic-bezier(.4,2,.6,1)'
+              transition: 'background 0.7s cubic-bezier(.4,2,.6,1)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
             }}
             animate={{
-              width: ratioMap[frameRatio].w,
-              height: ratioMap[frameRatio].h
+              width: ratioMap[frameRatio].w * 0.9,
+              height: ratioMap[frameRatio].h * 0.9
             }}
             transition={{
               type: "spring",
@@ -881,19 +2067,16 @@ export default function IOSHomeScreen() {
           {/* Device Frame */}
           <div 
             onMouseDown={handleDragStart}
+            className="device-frame"
             style={{
               position: 'relative',
-              width: '450px',
-              height: '920px',
-              backgroundImage: 'url("src/assets/iPhone 16 Pro - Black Titanium - Portrait.png")',
-              backgroundSize: 'contain',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
+              width: `${frameSize.width}px`,
+              height: `${frameSize.height}px`,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
               transition: isDragging ? 'none' : 'all 0.3s ease',
-              transform: `translate(${position.x}px, ${position.y}px) scale(${viewMode === 'full' ? 1 : 2.5})`,
+              transform: `translate(${position.x}px, ${position.y}px) scale(${viewMode === 'full' ? 1 : 2.8})`,
               transformOrigin: (() => {
                 switch (viewMode) {
                   case 'top-left': return 'top left';
@@ -911,15 +2094,39 @@ export default function IOSHomeScreen() {
               marginBottom: viewMode === 'dock-left' || viewMode === 'dock-right' ? '100px' : 0,
             }}
           >
-            {/* Screen Content Container */}
+            {/* PNG Device Frame Background */}
             <div style={{
-              width: '402px',
-              height: '874px',
-              position: 'relative',
-                background: getWallpaperBackground(),
-              borderRadius: '60px',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url("${deviceOptions[selectedDevice].image}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              pointerEvents: 'none',
+              zIndex: 2
+            }}></div>
+            
+            {/* Screen Content Container */}
+            <div className="device-screen" style={{
+              width: `${deviceOptions[selectedDevice].screenWidth * frameSize.scale}px`,
+              height: `${deviceOptions[selectedDevice].screenHeight * frameSize.scale}px`,
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: getWallpaperBackground(),
+              backgroundSize: containerStyle === 'wallpaper' ? 'cover' : 'initial',
+              backgroundPosition: containerStyle === 'wallpaper' ? 'center' : 'initial',
+              backgroundRepeat: containerStyle === 'wallpaper' ? 'no-repeat' : 'initial',
+              borderRadius: `${55 * frameSize.scale}px`,
               overflow: 'hidden',
+              zIndex: 1
             }}>
+
+              {/* Focus Mode Overlay */}
               {focusMode && (
                 <div style={{
                   position: 'absolute',
@@ -932,70 +2139,37 @@ export default function IOSHomeScreen() {
                   pointerEvents: 'none'
                 }} />
               )}
-              {/* Dynamic Island */}
-              <div style={{
-                position: 'absolute',
-                top: '11px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '120px',
-                height: '35px',
-                background: '#010101',
-                borderRadius: '20px',
-                zIndex: 20
-              }}></div>
 
-              {/* Side Buttons */}
-              <div style={{
-                position: 'absolute',
-                left: '-21px',
-                top: '115px',
-                width: '3px',
-                height: '32px',
-                background: '#1e1824',
-                borderRadius: '2px',
-                boxShadow: '0 60px #1e1824, 0 140px #1e1824'
-              }}></div>
-
-              {/* Power Button */}
-              <div style={{
-                position: 'absolute',
-                right: '-21px',
-                top: '200px',
-                width: '3px',
-                height: '100px',
-                background: '#1e1824',
-                borderRadius: '2px'
-              }}></div>
-            
               {/* Status Bar */}
               <div style={{
                 position: 'absolute',
-                top: '18px',
+                top: `${24 * getUIScale() * frameSize.scale}px`,
                 left: '0',
                 right: '0',
-                height: '22px',
+                height: `${22 * getUIScale() * frameSize.scale}px`,
                 padding: '0',
                 zIndex: 10
               }}>
-                <svg width="402" height="22" viewBox="0 0 402 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <text x="61" y="17" fill="white" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', fontSize: '17px', fontWeight: '600' }}>9:41</text>
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M307.865 6.03301C307.865 5.39996 307.388 4.88678 306.798 4.88678H305.732C305.143 4.88678 304.665 5.39996 304.665 6.03301V15.967C304.665 16.6 305.143 17.1132 305.732 17.1132H306.798C307.388 17.1132 307.865 16.6 307.865 15.967V6.03301ZM300.431 7.33206H301.498C302.087 7.33206 302.564 7.85756 302.564 8.5058V15.9395C302.564 16.5877 302.087 17.1132 301.498 17.1132H300.431C299.842 17.1132 299.364 16.5877 299.364 15.9395V8.5058C299.364 7.85756 299.842 7.33206 300.431 7.33206ZM296.099 9.98111H295.033C294.444 9.98111 293.966 10.5133 293.966 11.1698V15.9245C293.966 16.581 294.444 17.1132 295.033 17.1132H296.099C296.688 17.1132 297.166 16.581 297.166 15.9245V11.1698C297.166 10.5133 296.688 9.98111 296.099 9.98111ZM290.798 12.4264H289.732C289.143 12.4264 288.665 12.951 288.665 13.5981V15.9415C288.665 16.5886 289.143 17.1132 289.732 17.1132H290.798C291.388 17.1132 291.865 16.5886 291.865 15.9415V13.5981C291.865 12.951 291.388 12.4264 290.798 12.4264Z" fill="white"/>
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M323.436 7.30216C325.924 7.30226 328.316 8.22435 330.118 9.87783C330.254 10.0055 330.471 10.0039 330.604 9.87422L331.902 8.61075C331.97 8.54499 332.007 8.45591 332.007 8.36323C332.006 8.27055 331.967 8.18191 331.899 8.11691C327.168 3.7422 319.704 3.7422 314.973 8.11691C314.905 8.18186 314.866 8.27047 314.865 8.36316C314.865 8.45584 314.902 8.54494 314.97 8.61075L316.268 9.87422C316.401 10.0041 316.618 10.0057 316.754 9.87783C318.557 8.22424 320.949 7.30215 323.436 7.30216ZM323.433 11.5224C324.79 11.5223 326.099 12.0341 327.105 12.9582C327.242 13.0894 327.456 13.0865 327.589 12.9518L328.876 11.6325C328.944 11.5633 328.981 11.4694 328.98 11.3719C328.979 11.2743 328.94 11.1812 328.871 11.1134C325.807 8.2226 321.062 8.2226 317.998 11.1134C317.929 11.1812 317.89 11.2744 317.889 11.3719C317.888 11.4695 317.925 11.5634 317.993 11.6325L319.28 12.9518C319.413 13.0865 319.627 13.0894 319.763 12.9582C320.769 12.0347 322.077 11.523 323.433 11.5224ZM325.958 14.316C325.959 14.4213 325.922 14.5229 325.855 14.5967L323.678 17.0514C323.615 17.1236 323.528 17.1642 323.437 17.1642C323.346 17.1642 323.259 17.1236 323.195 17.0514L321.018 14.5967C320.951 14.5229 320.914 14.4212 320.916 14.3159C320.918 14.2105 320.959 14.1108 321.029 14.0402C322.419 12.7263 324.455 12.7263 325.845 14.0402C325.915 14.1108 325.956 14.2106 325.958 14.316Z" fill="white"/>
-                  <rect opacity="0.35" x="339.507" y="5" width="24" height="12" rx="3.8" stroke="white"/>
-                  <path opacity="0.4" d="M365.007 9.28113V13.3566C365.812 13.0114 366.335 12.2085 366.335 11.3189C366.335 10.4293 365.812 9.6263 365.007 9.28113" fill="white"/>
-                  <rect x="341.007" y="6.5" width="21" height="9" rx="2.5" fill="white"/>
+                <svg width={deviceOptions[selectedDevice].screenWidth * frameSize.scale} height={22 * getUIScale() * frameSize.scale} viewBox={`0 0 ${deviceOptions[selectedDevice].screenWidth} 22`} fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <text x={61 * getUIScale()} y="17" fill="white" style={{ fontFamily: SF_PRO_MEDIUM, fontSize: `${17 * getUIScale()}px`, fontWeight: '600' }}>9:41</text>
+                  <g transform={`scale(${getUIScale()})`}>
+                    <path fillRule="evenodd" clipRule="evenodd" d="M307.865 6.03301C307.865 5.39996 307.388 4.88678 306.798 4.88678H305.732C305.143 4.88678 304.665 5.39996 304.665 6.03301V15.967C304.665 16.6 305.143 17.1132 305.732 17.1132H306.798C307.388 17.1132 307.865 16.6 307.865 15.967V6.03301ZM300.431 7.33206H301.498C302.087 7.33206 302.564 7.85756 302.564 8.5058V15.9395C302.564 16.5877 302.087 17.1132 301.498 17.1132H300.431C299.842 17.1132 299.364 16.5877 299.364 15.9395V8.5058C299.364 7.85756 299.842 7.33206 300.431 7.33206ZM296.099 9.98111H295.033C294.444 9.98111 293.966 10.5133 293.966 11.1698V15.9245C293.966 16.581 294.444 17.1132 295.033 17.1132H296.099C296.688 17.1132 297.166 16.581 297.166 15.9245V11.1698C297.166 10.5133 296.688 9.98111 296.099 9.98111ZM290.798 12.4264H289.732C289.143 12.4264 288.665 12.951 288.665 13.5981V15.9415C288.665 16.5886 289.143 17.1132 289.732 17.1132H290.798C291.388 17.1132 291.865 16.5886 291.865 15.9415V13.5981C291.865 12.951 291.388 12.4264 290.798 12.4264Z" fill="white"/>
+                    <path fillRule="evenodd" clipRule="evenodd" d="M323.436 7.30216C325.924 7.30226 328.316 8.22435 330.118 9.87783C330.254 10.0055 330.471 10.0039 330.604 9.87422L331.902 8.61075C331.97 8.54499 332.007 8.45591 332.007 8.36323C332.006 8.27055 331.967 8.18191 331.899 8.11691C327.168 3.7422 319.704 3.7422 314.973 8.11691C314.905 8.18186 314.866 8.27047 314.865 8.36316C314.865 8.45584 314.902 8.54494 314.97 8.61075L316.268 9.87422C316.401 10.0041 316.618 10.0057 316.754 9.87783C318.557 8.22424 320.949 7.30215 323.436 7.30216ZM323.433 11.5224C324.79 11.5223 326.099 12.0341 327.105 12.9582C327.242 13.0894 327.456 13.0865 327.589 12.9518L328.876 11.6325C328.944 11.5633 328.981 11.4694 328.98 11.3719C328.979 11.2743 328.94 11.1812 328.871 11.1134C325.807 8.2226 321.062 8.2226 317.998 11.1134C317.929 11.1812 317.89 11.2744 317.889 11.3719C317.888 11.4695 317.925 11.5634 317.993 11.6325L319.28 12.9518C319.413 13.0865 319.627 13.0894 319.763 12.9582C320.769 12.0347 322.077 11.523 323.433 11.5224ZM325.958 14.316C325.959 14.4213 325.922 14.5229 325.855 14.5967L323.678 17.0514C323.615 17.1236 323.528 17.1642 323.437 17.1642C323.346 17.1642 323.259 17.1236 323.195 17.0514L321.018 14.5967C320.951 14.5229 320.914 14.4212 320.916 14.3159C320.918 14.2105 320.959 14.1108 321.029 14.0402C322.419 12.7263 324.455 12.7263 325.845 14.0402C325.915 14.1108 325.956 14.2106 325.958 14.316Z" fill="white"/>
+                    <rect opacity="0.35" x="339.507" y="5" width="24" height="12" rx="3.8" stroke="white"/>
+                    <path opacity="0.4" d="M365.007 9.28113V13.3566C365.812 13.0114 366.335 12.2085 366.335 11.3189C366.335 10.4293 365.812 9.6263 365.007 9.28113" fill="white"/>
+                    <rect x="341.007" y="6.5" width="21" height="9" rx="2.5" fill="white"/>
+                  </g>
                 </svg>
               </div>
 
               {/* Home Screen Content */}
               <div style={{
                 position: 'absolute',
-                top: '54px',
+                top: `${54 * getUIScale() * frameSize.scale}px`,
                 left: '0',
                 right: '0',
                 bottom: '0',
-                padding: '0 24px',
+                padding: `0 ${24 * getUIScale() * frameSize.scale}px`,
                 display: 'flex',
                 flexDirection: 'column'
               }}>
@@ -1010,528 +2184,35 @@ export default function IOSHomeScreen() {
                   <div style={{
                     display: 'flex',
                     justifyContent: 'center',
-                    gap: '6px',
-                    marginBottom: '18px'
+                    gap: `${6 * getUIScale() * frameSize.scale}px`,
+                    marginBottom: `${18 * getUIScale() * frameSize.scale}px`
                   }}>
                     <div style={{
-                      width: '5px',
-                      height: '5px',
+                      width: `${5 * getUIScale() * frameSize.scale}px`,
+                      height: `${5 * getUIScale() * frameSize.scale}px`,
                       borderRadius: '50%',
                       background: 'white'
                     }}></div>
                     <div style={{
-                      width: '5px',
-                      height: '5px',
+                      width: `${5 * getUIScale() * frameSize.scale}px`,
+                      height: `${5 * getUIScale() * frameSize.scale}px`,
                       borderRadius: '50%',
                       background: 'rgba(255,255,255,0.3)'
                     }}></div>
                   </div>
                   {renderDock()}
                   {/* Extra margin after dock */}
-                  <div style={{ height: '32px' }} />
+                  <div style={{ height: `${32 * getUIScale() * frameSize.scale}px` }} />
                 </div>
               </div>
             </div>
+            
+
           </div>
           </motion.div>
-
-        {/* Controls Panel */}
-        <div style={{
-          width: '320px',
-          background: 'white',
-          borderRadius: '20px',
-          padding: '30px',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-          border: '1px solid rgba(255,255,255,0.2)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'stretch',
-          justifyContent: 'center',
-          minHeight: '400px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          position: 'relative',
-          zIndex: 10
-        }}>
-          <h2 style={{
-            margin: '0 0 24px 0',
-            fontSize: '24px',
-            fontWeight: '700',
-            color: '#1a1a1a',
-            fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-          }}>Customize App</h2>
-            {/* App Name */}
-            <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#1a1a1a',
-                marginBottom: '8px',
-              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-            }}>
-                App Name
-            </label>
-              <input
-                type="text"
-                value={customAppName}
-                onChange={(e) => setCustomAppName(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '2px solid #e1e5e9',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                  outline: 'none',
-                  transition: 'border-color 0.2s ease',
-                  boxSizing: 'border-box'
-                }}
-                maxLength={12}
-                placeholder="Enter app name"
-                onFocus={(e) => e.target.style.borderColor = '#007AFF'}
-                onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
-              />
-            </div>
-            {/* App Icon */}
-            <div>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#1a1a1a',
-                marginBottom: '8px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-              }}>
-                App Icon
-              </label>
-              <button
-                onClick={handleIconClick}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: '#007AFF',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  justifyContent: 'center'
-                }}
-                onMouseEnter={(e) => e.target.style.background = '#0056CC'}
-                onMouseLeave={(e) => e.target.style.background = '#007AFF'}
-              >
-                <Upload size={18} /> Upload Icon
-              </button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept="image/*"
-                style={{ display: 'none' }}
-              />
-            </div>
-            {customAppIcon && (
-            <div style={{
-                marginTop: '20px',
-                padding: '16px',
-                background: '#f8f9fa',
-                borderRadius: '12px',
-                textAlign: 'center'
-              }}>
-                <img
-                  src={customAppIcon}
-                  alt="Preview"
-                  style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '13px',
-                    objectFit: 'cover'
-                  }}
-                />
-                <p style={{
-                  margin: '8px 0 0 0',
-                  fontSize: '14px',
-                  color: '#666',
-                  fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-                }}>Preview</p>
-              </div>
-            )}
-            {/* View Mode */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#1a1a1a',
-                marginBottom: '8px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-              }}>
-                View Mode
-              </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-              {[
-                { id: 'full', label: 'Full View' },
-                { id: 'top-left', label: 'Top Left' },
-                { id: 'top-right', label: 'Top Right' },
-                { id: 'dock-left', label: 'Dock Left' },
-                { id: 'dock-right', label: 'Dock Right' }
-              ].map(mode => (
-                <button
-                  key={mode.id}
-                  onClick={() => setViewMode(mode.id)}
-                  style={{
-                    padding: '10px',
-                    background: viewMode === mode.id ? '#007AFF' : '#f5f5f7',
-                    color: viewMode === mode.id ? 'white' : '#1a1a1a',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  {mode.label}
-                </button>
-              ))}
-            </div>
-          </div>
-            {/* Focus Mode */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#1a1a1a',
-                marginBottom: '8px',
-              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-            }}>
-              Focus Mode
-            </label>
-            <button
-              onClick={() => setFocusMode(!focusMode)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: focusMode ? '#007AFF' : '#f5f5f7',
-                color: focusMode ? 'white' : '#1a1a1a',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-                {focusMode ? <Sun size={16} /> : <Moon size={16} />}
-              {focusMode ? 'Focus Mode On' : 'Focus Mode Off'}
-            </button>
-          </div>
-            {/* Container Style */}
-            <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#1a1a1a',
-              marginBottom: '8px',
-              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-            }}>
-                Frame BG
-            </label>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '8px'
-              }}>
-                {[
-                  { id: 'solid', label: 'Solid' },
-                  { id: 'mesh', label: 'Mesh' },
-                ].map(style => (
-                  <button
-                    key={style.id}
-                    onClick={() => setContainerStyle(style.id)}
-              style={{
-                      padding: '10px',
-                      background: containerStyle === style.id ? '#007AFF' : '#f5f5f7',
-                      color: containerStyle === style.id ? 'white' : '#1a1a1a',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {style.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Color Controls & Previews */}
-            <div style={{ minHeight: 60, marginBottom: 24, position: 'relative' }}>
-              {containerStyle === 'solid' && (
-                <div style={{ flex: 1 }}>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#1a1a1a',
-                    marginBottom: '8px',
-                    fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-                  }}>
-                    Background Color
-                  </label>
-                  <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                    alignItems: 'center'
-                  }}>
-                    <input
-                      type="color"
-                      value={solidColor}
-                      onChange={e => setSolidColor(e.target.value)}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        padding: '0',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: 'pointer'
-                      }}
-                    />
-                    <input
-                      type="text"
-                      value={solidColor}
-                      onChange={e => setSolidColor(e.target.value)}
-                      style={{
-                        flex: 1,
-                        padding: '8px 12px',
-                        border: '2px solid #e1e5e9',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontFamily: 'monospace',
-                        outline: 'none'
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-              {containerStyle === 'gradient' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  {getGradientOptions(palette).map(([main, secondary], i) => (
-                    <button
-                      key={main + secondary}
-                      onClick={() => { setGradientMain(main); setGradientSecondary(secondary); setSelectedGradient(i); }}
-                      style={{
-                        width: 40,
-                        height: 32,
-                        borderRadius: 8,
-                        background: `linear-gradient(135deg, ${main} 0%, ${secondary} 100%)`,
-                        border: (gradientMain === main && gradientSecondary === secondary) ? '2.5px solid #007AFF' : '2px solid #e1e5e9',
-                        cursor: 'pointer',
-                        outline: 'none',
-                        boxShadow: (gradientMain === main && gradientSecondary === secondary) ? '0 0 0 2px #b3d4fc' : 'none',
-                        transition: 'all 0.2s'
-                      }}
-                      aria-label={`Set gradient ${main} to ${secondary}`}
-                    />
-                  ))}
-                  <button
-                    onClick={() => {
-                      // Randomize direction or swap for selected gradient
-                      const [main, secondary] = getGradientOptions(palette)[selectedGradient];
-                      if (Math.random() > 0.5) {
-                        setGradientMain(secondary);
-                        setGradientSecondary(main);
-                      } else {
-                        // Slightly lighten or darken
-                        const amt = Math.random() * 0.3 - 0.15;
-                        setGradientMain(lighten(main, amt));
-                        setGradientSecondary(lighten(secondary, -amt));
-                      }
-                    }}
-                    title="Randomize Gradient BG"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: '6px',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#888',
-                      outline: 'none',
-                      boxShadow: 'none',
-                      fontSize: '22px',
-                      marginLeft: 4
-                    }}
-                  >
-                    <Shuffle size={20} />
-                  </button>
-                </div>
-              )}
-              {containerStyle === 'mesh' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  {getMeshOptions(palette).map((mesh, i) => {
-                    const positions = [
-                      '20% 30%', '80% 70%', '60% 20%', '70% 80%'
-                    ];
-                    const meshBg = [
-                      ...mesh.map((color, i) =>
-                        `radial-gradient(circle at ${positions[i % positions.length]}, ${color} 0%, transparent 70%)`
-                      ),
-                      `linear-gradient(120deg, ${mesh[0]} 0%, ${mesh[1] || mesh[0]} 100%)`
-                    ].join(', ');
-                    return (
-                      <button
-                        key={mesh.join('-')}
-                        onClick={() => { setMeshColors(mesh); setSelectedMesh(i); }}
-                        style={{
-                          width: 48,
-                          height: 32,
-                          borderRadius: 8,
-                          background: meshBg,
-                          border: meshColors.join('-') === mesh.join('-') ? '2.5px solid #007AFF' : '2px solid #e1e5e9',
-                          cursor: 'pointer',
-                          outline: 'none',
-                          boxShadow: meshColors.join('-') === mesh.join('-') ? '0 0 0 2px #b3d4fc' : 'none',
-                          transition: 'all 0.2s',
-                          display: 'block',
-                          overflow: 'hidden'
-                        }}
-                        aria-label={`Set mesh colors ${mesh.join(', ')}`}
-                      />
-                    );
-                  })}
-                  <button
-                    onClick={() => {
-                      // Shuffle the selected mesh colors
-                      const mesh = getMeshOptions(palette)[selectedMesh];
-                      setMeshColors(shuffleArray(mesh));
-                    }}
-                    title="Randomize Mesh BG"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      padding: '6px',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#888',
-                      outline: 'none',
-                      boxShadow: 'none',
-                      fontSize: '22px',
-                      marginLeft: 4
-                    }}
-                  >
-                    <Shuffle size={20} />
-                  </button>
-                </div>
-              )}
-            </div>
-            {/* Blend Wallpaper */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#1a1a1a',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-              }}>
-                <input
-                  type="checkbox"
-                  checked={blendWallpaper}
-                  onChange={(e) => setBlendWallpaper(e.target.checked)}
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    accentColor: '#007AFF',
-                    cursor: 'pointer'
-                  }}
-                />
-                Blend wallpaper with frame background
-              </label>
-            </div>
-            {/* Frame Ratio */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#1a1a1a',
-                marginBottom: '8px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-              }}>
-                Frame Ratio
-              </label>
-              <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                {Object.keys(ratioMap).map(ratio => (
-                  <button
-                    key={ratio}
-                    onClick={() => setFrameRatio(ratio)}
-                style={{
-                      padding: '10px',
-                      background: frameRatio === ratio ? '#007AFF' : '#f5f5f7',
-                      color: frameRatio === ratio ? 'white' : '#1a1a1a',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                fontSize: '14px',
-                      fontWeight: '500',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {ratio}
-                  </button>
-                ))}
-            </div>
-            </div>
-            {/* Download Button */}
-            <button
-              onClick={handleDownload}
-              style={{
-                marginTop: 16,
-                width: '100%',
-                padding: '12px 0',
-                background: '#007AFF',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                fontSize: '15px',
-                fontWeight: '600',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                cursor: 'pointer',
-                transition: 'background 0.2s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-              }}
-            >
-              Download
-            </button>
-          </div>
         </div>
       </div>
+      
       {showCrop && (
         <div style={{
           position: 'fixed',
@@ -1609,7 +2290,7 @@ export default function IOSHomeScreen() {
                 type="range"
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
                 style={{
@@ -1661,7 +2342,7 @@ export default function IOSHomeScreen() {
                 onClick={handleCropSave}
                 style={{
                   padding: '12px 24px',
-                  background: '#007AFF',
+                  background: '#209AF7',
                   color: 'white',
                   border: 'none',
                   borderRadius: '12px',
@@ -1671,7 +2352,7 @@ export default function IOSHomeScreen() {
                   fontWeight: '600',
                   transition: 'all 0.2s ease',
                   ':hover': {
-                    background: '#0056CC'
+                    background: '#1B87DB'
                   }
                 }}
               >
@@ -1696,29 +2377,37 @@ export default function IOSHomeScreen() {
   );
 }
 
-function AppIcon({ src, name, nolabel = false }) {
+function AppIcon({ src, name, nolabel = false, size = 62, scale = 1 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <img
-        src={src}
-        alt={name}
+      <Squircle
+        cornerRadius={16 * scale}
+        cornerSmoothing={1}
+        width={size}
+        height={size}
         style={{
-          width: '62px',
-          height: '62px',
-          borderRadius: '14px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-          objectFit: 'cover',
           background: '#222'
         }}
-      />
+      >
+        <img
+          src={src}
+          alt={name}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      </Squircle>
       {!nolabel && (
         <span style={{
           color: 'white',
-          fontSize: '11px',
-          marginTop: '6px',
+          fontSize: `${11 * scale}px`,
+          marginTop: `${6 * scale}px`,
           fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
           textAlign: 'center',
-          maxWidth: '62px',
+          maxWidth: `${size}px`,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap'
