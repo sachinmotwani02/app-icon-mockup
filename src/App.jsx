@@ -202,6 +202,8 @@ function getMeshOptions(palette) {
   ];
 }
 
+
+
 // iOS-Style Glass Dock Component with Displacement Effects
 function LiquidGlassDock({ children, style, cornerRadius, uiScale, frameScale, viewMode, isDragging }) {
   const [shaderId] = useState(() => 'dock-liquid-' + Math.random().toString(36).substr(2, 9));
@@ -364,12 +366,74 @@ export default function IOSHomeScreen() {
   const [selectedSolid, setSelectedSolid] = useState(0);
   const [selectedGradient, setSelectedGradient] = useState(0);
   const [selectedMesh, setSelectedMesh] = useState(0);
+  const [wallpaperBgColor, setWallpaperBgColor] = useState('#38bdf8');
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hideOtherIcons, setHideOtherIcons] = useState(false);
+  const [deviceZoom, setDeviceZoom] = useState(1);
   const [randomizeKey, setRandomizeKey] = useState(0);
   const [selectedDevice, setSelectedDevice] = useState('black-titanium');
+  const [selectedWallpaper, setSelectedWallpaper] = useState('ios26-light');
+
+  // Wallpaper options with beautiful names and suggested background colors
+  const wallpaperOptions = [
+    { 
+      id: 'ios26-light', 
+      name: 'iOS 26', 
+      file: 'ios26-light.jpg', 
+      description: 'Official iOS 26 wallpaper',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+      suggestedBgColor: '#f2f2f2' // Light blue
+    },
+    { 
+      id: 'aurora-mountains', 
+      name: 'Aurora Mountains', 
+      file: 'aurora-mountains.jpg', 
+      description: 'Majestic mountain aurora',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center 30%',
+      suggestedBgColor: '#e0eaff' // Deep purple
+    },
+    { 
+      id: 'cosmic-nebula', 
+      name: 'Cosmic Nebula', 
+      file: 'cosmic-nebula.jpg', 
+      description: 'Deep space colors',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+      suggestedBgColor: '#f6ebff' // Deep purple
+    },
+    { 
+      id: 'ocean-waves', 
+      name: 'Ocean Waves', 
+      file: 'ocean-waves.jpg', 
+      description: 'Tranquil blue waters',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center 40%',
+      suggestedBgColor: '#c4d7fd' // Deep ocean blue
+    },
+    { 
+      id: 'sunset-gradient', 
+      name: 'Sunset Gradient', 
+      file: 'sunset-gradient.jpg', 
+      description: 'Warm evening tones',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+      suggestedBgColor: '#eff6f2' // Warm red
+    },
+    { 
+      id: 'forest-depths', 
+      name: 'Forest Depths', 
+      file: 'forest-depths.jpg', 
+      description: 'Emerald forest canopy',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center 20%',
+      suggestedBgColor: '#012665' // Deep forest green
+    },
+    
+  ];
 
   // UI scaling factor for the larger screen (580/402 ≈ 1.44)
   const getUIScale = () => {
@@ -502,6 +566,11 @@ export default function IOSHomeScreen() {
   // Reset position when view mode changes
   useEffect(() => {
     setPosition({ x: 0, y: 0 });
+    if (viewMode === 'full') {
+      setDeviceZoom(1);
+    } else {
+      setDeviceZoom(2.8);
+    }
   }, [viewMode]);
 
   // Frame ratio map with smooth transitions
@@ -552,6 +621,14 @@ export default function IOSHomeScreen() {
     }
   }, [customAppIcon]);
 
+  // Set suggested background color when switching wallpapers
+  useEffect(() => {
+    const currentWallpaper = wallpaperOptions.find(w => w.id === selectedWallpaper);
+    if (currentWallpaper?.suggestedBgColor) {
+      setWallpaperBgColor(currentWallpaper.suggestedBgColor);
+    }
+  }, [selectedWallpaper]);
+
 
 
   // Get container background based on style and extracted colors
@@ -569,24 +646,18 @@ export default function IOSHomeScreen() {
         `linear-gradient(120deg, ${meshColors[0]} 0%, ${meshColors[1] || meshColors[0]} 100%)`
       ].join(',\n');
     } else if (containerStyle === 'wallpaper') {
-      const positions = [
-        '15% 25%', '85% 75%', '65% 15%', '75% 85%'
-      ];
-      return [
-        ...wallpaperColors.map((color, i) =>
-          `radial-gradient(circle at ${positions[i % positions.length]}, ${color}40 0%, transparent 60%)`
-        ),
-        `linear-gradient(135deg, ${wallpaperColors[0]}20 0%, ${wallpaperColors[1]}30 25%, ${wallpaperColors[2]}20 50%, ${wallpaperColors[3]}30 100%)`
-      ].join(',\n');
+      // Use solid color background for wallpaper mode
+      return wallpaperBgColor;
     }
     return solidColor;
   };
 
   // Get wallpaper background with blend control
   const getWallpaperBackground = () => {
-    // If wallpaper style is selected, use the iOS wallpaper image
+    // If wallpaper style is selected, use the selected wallpaper image
     if (containerStyle === 'wallpaper') {
-      return `url('src/assets/ios26-light.jpg')`;
+      const selectedWallpaperFile = wallpaperOptions.find(w => w.id === selectedWallpaper)?.file || 'ios26-light.jpg';
+      return `url('src/assets/${selectedWallpaperFile}')`;
     }
     
     // If no custom icon uploaded yet, keep wallpaper black
@@ -1263,10 +1334,10 @@ export default function IOSHomeScreen() {
                 }}>
                   {[
                     { id: 'full', label: 'Full View', icon: <Frame size={14}/> },
-                    { id: 'top-left', label: 'Top Left', icon: <ArrowUpLeft size={14} /> },
-                    { id: 'top-right', label: 'Top Right', icon: <ArrowUpRight size={14} /> },
+                    { id: 'dock-right', label: 'Dock Right', icon: <ArrowDownRight size={14} /> },
                     { id: 'dock-left', label: 'Dock Left', icon: <ArrowDownLeft size={14} /> },
-                    { id: 'dock-right', label: 'Dock Right', icon: <ArrowDownRight size={14} /> }
+                    { id: 'top-right', label: 'Top Right', icon: <ArrowUpRight size={14} /> },
+                    { id: 'top-left', label: 'Top Left', icon: <ArrowUpLeft size={14} /> }
                   ].map(mode => (
                     <button
                       key={mode.id}
@@ -1669,114 +1740,131 @@ export default function IOSHomeScreen() {
                       fontSize: '14px',
                       fontWeight: '500',
                       color: '#374151',
-                      marginBottom: '8px',
+                      marginBottom: '12px',
                       fontFamily: SF_PRO_MEDIUM
                     }}>
-                      Wallpaper Options
+                      Choose Wallpaper
                     </label>
+                    
+                    {/* Wallpaper Gallery */}
                     <div style={{
-                      display: 'flex',
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
                       gap: '8px',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                      marginBottom: '10px'
+                      marginBottom: '16px'
                     }}>
-                      {[
-                        ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981'], // Blue to Purple to Orange to Green
-                        ['#667eea', '#764ba2', '#f093fb', '#f5576c'], // Cool Purple Gradient
-                        ['#4facfe', '#00f2fe', '#43e97b', '#38f9d7']  // Ocean Blue to Mint
-                      ].map((colors, i) => {
-                        const positions = [
-                          '15% 25%', '85% 75%', '65% 15%', '75% 85%'
-                        ];
-                        const wallpaperBg = [
-                          ...colors.map((color, idx) =>
-                            `radial-gradient(circle at ${positions[idx % positions.length]}, ${color}40 0%, transparent 60%)`
-                          ),
-                          `linear-gradient(135deg, ${colors[0]}20 0%, ${colors[1]}30 25%, ${colors[2]}20 50%, ${colors[3]}30 100%)`
-                        ].join(', ');
-                        return (
-                          <button
-                            key={colors.join('-')}
-                            onClick={() => setWallpaperColors(colors)}
-                            style={{
-                              width: '44px',
-                              height: '32px',
-                              borderRadius: '8px',
-                              background: wallpaperBg,
-                              border: '1px solid #d1d5db',
-                              boxShadow: JSON.stringify(wallpaperColors) === JSON.stringify(colors) ? '0 0 0 2px rgba(32,154,247,0.55)' : 'none',
-                              cursor: 'pointer',
-                              outline: 'none',
-                              transition: 'border-color 0.2s ease',
-                              overflow: 'hidden'
-                            }}
-                          />
-                        );
-                      })}
-                      <button
-                        onClick={() => {
-                          const colors = ['#3b82f6', '#8b5cf6', '#f59e0b', '#10b981'];
-                          setWallpaperColors(shuffleArray(colors));
-                        }}
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          background: '#f8fafc',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'background-color 0.2s ease',
-                          outline: 'none'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
-                        title="Randomize Wallpaper Colors"
-                      >
-                        <Shuffle size={16} strokeWidth={2} color="#374151" />
-                      </button>
+                      {wallpaperOptions.map((wallpaper) => (
+                        <button
+                          key={wallpaper.id}
+                          onClick={() => setSelectedWallpaper(wallpaper.id)}
+                          style={{
+                            position: 'relative',
+                            width: '100%',
+                            aspectRatio: '4/3',
+                            borderRadius: '8px',
+                            border: selectedWallpaper === wallpaper.id ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            outline: 'none',
+                            transition: 'all 0.2s ease',
+                            backgroundImage: `url('src/assets/${wallpaper.file}')`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            boxShadow: selectedWallpaper === wallpaper.id ? '0 0 0 1px rgba(59, 130, 246, 0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (selectedWallpaper !== wallpaper.id) {
+                              e.target.style.borderColor = '#9ca3af';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (selectedWallpaper !== wallpaper.id) {
+                              e.target.style.borderColor = '#e2e8f0';
+                            }
+                          }}
+                        >
+                          {/* Selected indicator */}
+                          {selectedWallpaper === wallpaper.id && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '4px',
+                              right: '4px',
+                              width: '16px',
+                              height: '16px',
+                              borderRadius: '50%',
+                              background: '#3b82f6',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                            }}>
+                              <div style={{
+                                width: '6px',
+                                height: '3px',
+                                borderLeft: '1.5px solid white',
+                                borderBottom: '1.5px solid white',
+                                transform: 'rotate(-45deg) translateY(-0.5px)'
+                              }} />
+                            </div>
+                          )}
+                        </button>
+                      ))}
                     </div>
-                    <div style={{
-                      padding: '12px',
-                      background: '#f1f5f9',
-                      borderRadius: '10px',
-                      border: '1px solid #e2e8f0',
-                      marginTop: '8px'
-                    }}>
+
+                    {/* Wallpaper Background Color */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '8px',
+                        fontFamily: SF_PRO_MEDIUM
+                      }}>
+                        Background Color
+                      </label>
                       <div style={{
                         display: 'flex',
+                        gap: '10px',
                         alignItems: 'center',
-                        gap: '8px',
-                        marginBottom: '6px'
+                        padding: '12px',
+                        background: '#f8fafc',
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0'
                       }}>
-                        <div style={{
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '6px',
-                          backgroundImage: `url('src/assets/ios26-light.jpg')`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                          border: '1px solid #d1d5db'
-                        }} />
-                        <span style={{
-                          fontSize: '13px',
-                          color: '#475569',
-                          fontFamily: SF_PRO_MEDIUM
-                        }}>iOS 26 Wallpaper</span>
+                        <input
+                          type="color"
+                          value={wallpaperBgColor}
+                          onChange={e => setWallpaperBgColor(e.target.value)}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            padding: '0',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            outline: 'none'
+                          }}
+                        />
+                        <input
+                          type="text"
+                          value={wallpaperBgColor}
+                          onChange={e => setWallpaperBgColor(e.target.value)}
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            fontFamily: 'SF Mono, Monaco, monospace',
+                            outline: 'none',
+                            background: 'white'
+                          }}
+                        />
                       </div>
-                      <p style={{
-                        margin: '0',
-                        fontSize: '12px',
-                        color: '#64748b',
-                        fontFamily: SF_PRO_REGULAR,
-                        lineHeight: '1.4'
-                      }}>
-                        Frame colors adapt to complement the wallpaper
-                      </p>
                     </div>
+
+
                   </div>
                 )}
               </div>
@@ -1916,6 +2004,50 @@ export default function IOSHomeScreen() {
                       {device.name}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Device Zoom Slider */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>
+                  Device Zoom
+                </label>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  <input
+                    type="range"
+                    min={viewMode === 'full' ? 0.8 : 1.5}
+                    max={viewMode === 'full' ? 1.5 : 4}
+                    step={0.01}
+                    value={deviceZoom}
+                    onChange={(e) => setDeviceZoom(Number(e.target.value))}
+                    style={{
+                      flex: 1,
+                      height: '4px',
+                      WebkitAppearance: 'none',
+                      background: '#d1d5db',
+                      borderRadius: '2px',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <span style={{
+                    fontSize: '12px',
+                    color: '#64748b',
+                    fontFamily: SF_PRO_REGULAR,
+                    minWidth: '36px',
+                    textAlign: 'right'
+                  }}>{Math.round(deviceZoom * 100)}%</span>
                 </div>
               </div>
             </div>
@@ -2076,7 +2208,7 @@ export default function IOSHomeScreen() {
               justifyContent: 'center',
               alignItems: 'center',
               transition: isDragging ? 'none' : 'all 0.3s ease',
-              transform: `translate(${position.x}px, ${position.y}px) scale(${viewMode === 'full' ? 1 : 2.8})`,
+              transform: `translate(${position.x}px, ${position.y}px) scale(${deviceZoom})`,
               transformOrigin: (() => {
                 switch (viewMode) {
                   case 'top-left': return 'top left';
@@ -2110,21 +2242,33 @@ export default function IOSHomeScreen() {
             }}></div>
             
             {/* Screen Content Container */}
-            <div className="device-screen" style={{
-              width: `${deviceOptions[selectedDevice].screenWidth * frameSize.scale}px`,
-              height: `${deviceOptions[selectedDevice].screenHeight * frameSize.scale}px`,
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              background: getWallpaperBackground(),
-              backgroundSize: containerStyle === 'wallpaper' ? 'cover' : 'initial',
-              backgroundPosition: containerStyle === 'wallpaper' ? 'center' : 'initial',
-              backgroundRepeat: containerStyle === 'wallpaper' ? 'no-repeat' : 'initial',
-              borderRadius: `${55 * frameSize.scale}px`,
-              overflow: 'hidden',
-              zIndex: 1
-            }}>
+            <div 
+              key={`screen-${selectedWallpaper}-${containerStyle}`}
+              className="device-screen" 
+              style={{
+                width: `${deviceOptions[selectedDevice].screenWidth * frameSize.scale}px`,
+                height: `${deviceOptions[selectedDevice].screenHeight * frameSize.scale}px`,
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                ...(containerStyle === 'wallpaper' ? {
+                  backgroundImage: getWallpaperBackground(),
+                  backgroundSize: wallpaperOptions.find(w => w.id === selectedWallpaper)?.backgroundSize || 'cover',
+                  backgroundPosition: wallpaperOptions.find(w => w.id === selectedWallpaper)?.backgroundPosition || 'center center',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundAttachment: 'scroll'
+                } : {
+                  background: getWallpaperBackground(),
+                  backgroundSize: 'initial',
+                  backgroundPosition: 'initial',
+                  backgroundRepeat: 'initial',
+                  backgroundAttachment: 'initial'
+                }),
+                borderRadius: `${55 * frameSize.scale}px`,
+                overflow: 'hidden',
+                zIndex: 1
+              }}>
 
               {/* Focus Mode Overlay */}
               {focusMode && (
