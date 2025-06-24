@@ -3,7 +3,7 @@ import Cropper from 'react-easy-crop';
 import ColorThief from 'colorthief';
 import { motion, AnimatePresence } from 'framer-motion';
 import domtoimage from 'dom-to-image-more';
-import { Shuffle, Grip, Sun, Moon, Upload, Pencil, Download, Monitor, Paintbrush, Frame, ArrowUpLeft, ArrowUpRight, ArrowDownLeft, ArrowDownRight, EyeOff } from 'lucide-react';
+import { Shuffle, Grip, Sun, Moon, Upload, Pencil, Download, Monitor, Paintbrush, Frame, ArrowUpLeft, ArrowUpRight, ArrowDownLeft, ArrowDownRight, EyeOff, Sticker } from 'lucide-react';
 import { Squircle } from '@squircle-js/react';
 import { getSvgPath } from 'figma-squircle';
 
@@ -371,7 +371,7 @@ export default function IOSHomeScreen() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hideOtherIcons, setHideOtherIcons] = useState(false);
-  const [deviceZoom, setDeviceZoom] = useState(1);
+  const [deviceZoom, setDeviceZoom] = useState(0.9);
   const [randomizeKey, setRandomizeKey] = useState(0);
   const [selectedDevice, setSelectedDevice] = useState('black-titanium');
   const [selectedWallpaper, setSelectedWallpaper] = useState('ios26-light');
@@ -567,9 +567,9 @@ export default function IOSHomeScreen() {
   useEffect(() => {
     setPosition({ x: 0, y: 0 });
     if (viewMode === 'full') {
-      setDeviceZoom(1);
+      setDeviceZoom(0.9);
     } else {
-      setDeviceZoom(2.8);
+      setDeviceZoom(2.5);
     }
   }, [viewMode]);
 
@@ -1127,24 +1127,42 @@ export default function IOSHomeScreen() {
             borderBottom: '1px solid #e2e8f0',
             background: '#ffffff'
           }}>
+            {/* Logo */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: '8px'
+            }}>
+              <img 
+                src="/logo.svg" 
+                alt="iOS App Mockup Logo" 
+                style={{
+                  width: '100px',
+                  height: '50px',
+                  objectFit: 'contain'
+                }}
+              />
+            </div>
             <h1 style={{
               margin: '0 0 8px 0',
               fontSize: '24px',
               fontWeight: '700',
               color: '#1a1a1a',
               fontFamily: SF_PRO_BOLD,
-              lineHeight: '1.2'
+              lineHeight: '1.2',
+              textAlign: 'center'
             }}>
-              iOS App Mockup
+              iOS App Icon Mockup Generator
             </h1>
             <p style={{
               margin: '0',
               fontSize: '14px',
               color: '#666',
               fontFamily: SF_PRO_REGULAR,
-              lineHeight: '1.4'
+              lineHeight: '1.4',
+              textAlign: 'center'
             }}>
-              Create beautiful app icon mockups
+              Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.
             </p>
           </div>
 
@@ -1155,7 +1173,7 @@ export default function IOSHomeScreen() {
             overflowX: 'hidden'
           }}>
             
-            {/* App Details Section */}
+            {/* App Icon Section */}
             <div style={{
               padding: '20px 24px',
               borderBottom: '1px solid #e2e8f0'
@@ -1166,14 +1184,14 @@ export default function IOSHomeScreen() {
                 gap: '8px',
                 marginBottom: '16px'
               }}>
-                <Pencil size={16} color="#475569" strokeWidth={2} />
+                <Sticker size={16} color="#475569" strokeWidth={2} />
                 <h3 style={{
                   margin: '0',
                   fontSize: '16px',
                   fontWeight: '600',
                   color: '#1e293b',
                   fontFamily: SF_PRO_MEDIUM
-                }}>App Details</h3>
+                }}>App Icon</h3>
               </div>
               
               {/* App Name */}
@@ -1290,227 +1308,6 @@ export default function IOSHomeScreen() {
                   }}>Preview</p>
                 </div>
               )}
-            </div>
-
-
-
-            {/* Display Section */}
-            <div style={{
-              padding: '20px 24px',
-              borderBottom: '1px solid #e2e8f0'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '16px'
-              }}>
-                <Monitor size={16} color="#475569" strokeWidth={2} />
-                <h3 style={{
-                  margin: '0',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#1e293b',
-                  fontFamily: SF_PRO_MEDIUM
-                }}>Display</h3>
-              </div>
-
-              {/* View Mode */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px',
-                  fontFamily: SF_PRO_MEDIUM
-                }}>
-                  View Mode
-                </label>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(2, 1fr)', 
-                  gap: '8px' 
-                }}>
-                  {[
-                    { id: 'full', label: 'Full View', icon: <Frame size={14}/> },
-                    { id: 'dock-right', label: 'Dock Right', icon: <ArrowDownRight size={14} /> },
-                    { id: 'dock-left', label: 'Dock Left', icon: <ArrowDownLeft size={14} /> },
-                    { id: 'top-right', label: 'Top Right', icon: <ArrowUpRight size={14} /> },
-                    { id: 'top-left', label: 'Top Left', icon: <ArrowUpLeft size={14} /> }
-                  ].map(mode => (
-                    <button
-                      key={mode.id}
-                      onClick={() => setViewMode(mode.id)}
-                      style={{
-                        padding: '10px 8px',
-                        background: viewMode === mode.id ? '#209AF7' : '#f8fafc',
-                        color: viewMode === mode.id ? 'white' : '#374151',
-                        border: '1px solid ' + (viewMode === mode.id ? '#209AF7' : '#e2e8f0'),
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontFamily: SF_PRO_REGULAR,
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        transition: 'background-color 0.2s ease',
-                        outline: 'none'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (viewMode !== mode.id) {
-                          e.target.style.backgroundColor = '#f1f5f9';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (viewMode !== mode.id) {
-                          e.target.style.backgroundColor = '#f8fafc';
-                        }
-                      }}
-                    >
-                      {mode.icon}
-                      {mode.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Display Controls */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px'
-              }}>
-                {/* Focus Mode Toggle */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    {focusMode ? <Sun size={14} strokeWidth={2} color="#374151" /> : <Moon size={14} strokeWidth={2} color="#374151" />}
-                    <label style={{
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      fontFamily: SF_PRO_MEDIUM,
-                      cursor: 'pointer'
-                    }} onClick={() => setFocusMode(!focusMode)}>
-                      Focus Mode
-                    </label>
-                  </div>
-                  <div 
-                    onClick={() => setFocusMode(!focusMode)}
-                    style={{
-                      width: '44px',
-                      height: '24px',
-                      borderRadius: '12px',
-                      background: focusMode ? '#209AF7' : '#e2e8f0',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      borderRadius: '50%',
-                      background: 'white',
-                      position: 'absolute',
-                      top: '2px',
-                      left: focusMode ? '22px' : '2px',
-                      transition: 'left 0.2s ease',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                    }} />
-                  </div>
-                </div>
-
-                {/* Hide Icons Toggle */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <EyeOff size={14} strokeWidth={2} color="#374151" />
-                    <label style={{
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#374151',
-                      fontFamily: SF_PRO_MEDIUM,
-                      cursor: 'pointer'
-                    }} onClick={() => setHideOtherIcons(!hideOtherIcons)}>
-                      Hide Other Icons
-                    </label>
-                  </div>
-                  <div 
-                    onClick={() => setHideOtherIcons(!hideOtherIcons)}
-                    style={{
-                      width: '44px',
-                      height: '24px',
-                      borderRadius: '12px',
-                      background: hideOtherIcons ? '#209AF7' : '#e2e8f0',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s ease'
-                    }}
-                  >
-                    <div style={{
-                      width: '20px',
-                      height: '20px',
-                      borderRadius: '50%',
-                      background: 'white',
-                      position: 'absolute',
-                      top: '2px',
-                      left: hideOtherIcons ? '22px' : '2px',
-                      transition: 'left 0.2s ease',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                    }} />
-                  </div>
-                </div>
-
-                {/* Randomize Button */}
-                <button
-                  onClick={randomizeAppPositions}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                    color: '#374151',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: SF_PRO_MEDIUM,
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    transition: 'background 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = 'linear-gradient(135deg, #e2e8f0 0%, #d1d5db 100%)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
-                  }}
-                >
-                  <Grip size={16} strokeWidth={2} />
-                  Randomise App Icons
-                </button>
-              </div>
             </div>
 
             {/* Background Section */}
@@ -1928,6 +1725,225 @@ export default function IOSHomeScreen() {
                 </div>
               </div>
               )}
+            </div>
+
+            {/* Display Section */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid #e2e8f0'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '16px'
+              }}>
+                <Monitor size={16} color="#475569" strokeWidth={2} />
+                <h3 style={{
+                  margin: '0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>Display</h3>
+              </div>
+
+              {/* View Mode */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontFamily: SF_PRO_MEDIUM
+                }}>
+                  View Mode
+                </label>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(2, 1fr)', 
+                  gap: '8px' 
+                }}>
+                  {[
+                    { id: 'full', label: 'Full View', icon: <Frame size={14}/> },
+                    { id: 'dock-right', label: 'Dock Right', icon: <ArrowDownRight size={14} /> },
+                    { id: 'dock-left', label: 'Dock Left', icon: <ArrowDownLeft size={14} /> },
+                    { id: 'top-right', label: 'Top Right', icon: <ArrowUpRight size={14} /> },
+                    { id: 'top-left', label: 'Top Left', icon: <ArrowUpLeft size={14} /> }
+                  ].map(mode => (
+                    <button
+                      key={mode.id}
+                      onClick={() => setViewMode(mode.id)}
+                      style={{
+                        padding: '10px 8px',
+                        background: viewMode === mode.id ? '#209AF7' : '#f8fafc',
+                        color: viewMode === mode.id ? 'white' : '#374151',
+                        border: '1px solid ' + (viewMode === mode.id ? '#209AF7' : '#e2e8f0'),
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontFamily: SF_PRO_REGULAR,
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'background-color 0.2s ease',
+                        outline: 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (viewMode !== mode.id) {
+                          e.target.style.backgroundColor = '#f1f5f9';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (viewMode !== mode.id) {
+                          e.target.style.backgroundColor = '#f8fafc';
+                        }
+                      }}
+                    >
+                      {mode.icon}
+                      {mode.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Display Controls */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                {/* Focus Mode Toggle */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    {focusMode ? <Sun size={14} strokeWidth={2} color="#374151" /> : <Moon size={14} strokeWidth={2} color="#374151" />}
+                    <label style={{
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      fontFamily: SF_PRO_MEDIUM,
+                      cursor: 'pointer'
+                    }} onClick={() => setFocusMode(!focusMode)}>
+                      Focus Mode
+                    </label>
+                  </div>
+                  <div 
+                    onClick={() => setFocusMode(!focusMode)}
+                    style={{
+                      width: '44px',
+                      height: '24px',
+                      borderRadius: '12px',
+                      background: focusMode ? '#209AF7' : '#e2e8f0',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      background: 'white',
+                      position: 'absolute',
+                      top: '2px',
+                      left: focusMode ? '22px' : '2px',
+                      transition: 'left 0.2s ease',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Hide Icons Toggle */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <EyeOff size={14} strokeWidth={2} color="#374151" />
+                    <label style={{
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      fontFamily: SF_PRO_MEDIUM,
+                      cursor: 'pointer'
+                    }} onClick={() => setHideOtherIcons(!hideOtherIcons)}>
+                      Hide Other Icons
+                    </label>
+                  </div>
+                  <div 
+                    onClick={() => setHideOtherIcons(!hideOtherIcons)}
+                    style={{
+                      width: '44px',
+                      height: '24px',
+                      borderRadius: '12px',
+                      background: hideOtherIcons ? '#209AF7' : '#e2e8f0',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                  >
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      background: 'white',
+                      position: 'absolute',
+                      top: '2px',
+                      left: hideOtherIcons ? '22px' : '2px',
+                      transition: 'left 0.2s ease',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Randomize Button */}
+                <button
+                  onClick={randomizeAppPositions}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                    color: '#374151',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontFamily: SF_PRO_MEDIUM,
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'background 0.2s ease',
+                    outline: 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'linear-gradient(135deg, #e2e8f0 0%, #d1d5db 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
+                  }}
+                >
+                  <Grip size={16} strokeWidth={2} />
+                  Randomise App Icons
+                </button>
+              </div>
             </div>
 
             {/* Device Selection Section */}
