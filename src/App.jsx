@@ -1110,87 +1110,114 @@ export default function IOSHomeScreen() {
     useEffect(() => {
       const interval = setInterval(() => {
         setCurrentIconIndex(prevIndex => (prevIndex + 1) % promoIcons.length);
-      }, 2500);
+      }, 4000);
       return () => clearInterval(interval);
     }, []);
 
     return (
-      <div
+      <a
+        href="https://iconcraft.app"
+        target="_blank"
+        rel="noopener noreferrer"
         style={{
-          margin: '0 0 8px 0',
-          padding: '24px',
-          background: 'radial-gradient(circle at 50% 150%, #B9EAFF, #26CEF4)',
-          borderRadius: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: '100%',
-          position: 'relative',
-          boxSizing: 'border-box',
-        }}>
-        <h4 style={{
-          fontFamily: "'Inter', sans-serif",
-          fontWeight: 500,
-          fontSize: '20px',
-          color: 'white',
-          letterSpacing: '-0.05em',
-          lineHeight: '1.2',
-          margin: 0,
-          zIndex: 1,
-          textAlign: 'center',
-        }}>
-          Create beautiful<br />app icons without<br />any design skills
-        </h4>
-        <div style={{
-          position: 'relative',
-          marginTop: '20px',
-        }}>
-          {/* Background/border with blend mode */}
+          textDecoration: 'none',
+          display: 'block',
+        }}
+      >
+        <div
+          style={{
+            margin: '0 0 12px 0',
+            padding: '16px',
+            background: 'radial-gradient(circle at 50% 150%,rgb(143, 219, 252), #26CEF4)',
+            borderRadius: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+            position: 'relative',
+            boxSizing: 'border-box',
+            cursor: 'pointer',
+          }}>
+          <h4 style={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
+            fontSize: '22px',
+            color: 'white',
+            letterSpacing: '-0.05em',
+            lineHeight: '1.2',
+            margin: 0,
+            zIndex: 1,
+            textAlign: 'center',
+          }}>
+            Create beautiful<br />app icons without<br />any design skills
+          </h4>
           <div style={{
-            padding: '10px 18px',
-            border: '2px solid rgba(255, 255, 255, 0.6)',
-            borderRadius: '28px',
-            mixBlendMode: 'soft-light',
+            position: 'relative',
+            marginTop: '32px',
+          }}>
+            {/* Background/border with blend mode */}
+            <div style={{
+              padding: '8px 15px',
+              border: '2px solid rgba(255, 255, 255, 0.6)',
+              borderRadius: '24px',
+              mixBlendMode: 'soft-light',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}>
+              {/* Dashed box (left) */}
+              <DashedSquircle size={48} cornerRadius={14} />
+              {/* Placeholder for the icon (center) */}
+              <div style={{ width: '60px', height: '48px' }}/>
+              {/* Dashed box (right) */}
+              <DashedSquircle size={48} cornerRadius={14} />
+            </div>
+
+            {/* Icon on top, with no blend mode, centered */}
+            <div style={{
+              position: 'absolute',
+              top: '-6px',
+              left: 'calc(50% - 32px)',
+              width: '64px',
+              height: '64px',
+            }}>
+              <AnimatePresence>
+                <motion.img
+                  key={currentIconIndex}
+                  src={promoIcons[currentIconIndex]}
+                  alt="promo icon"
+                  initial={{ opacity: 0, y: 20, filter: 'blur(5px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: -20, filter: 'blur(5px)' }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    position: 'absolute',
+                  }}
+                />
+              </AnimatePresence>
+            </div>
+          </div>
+           <div style={{
+            marginTop: '18px',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: '8px',
           }}>
-            {/* Dashed box (left) */}
-            <DashedSquircle size={56} cornerRadius={16} />
-            {/* Placeholder for the icon (center) */}
-            <div style={{ width: '70px', height: '56px' }}/>
-            {/* Dashed box (right) */}
-            <DashedSquircle size={56} cornerRadius={16} />
-          </div>
-
-          {/* Icon on top, with no blend mode, centered */}
-          <div style={{
-            position: 'absolute',
-            top: '-8px',
-            left: 'calc(50% - 38px)',
-            width: '76px',
-            height: '76px',
-          }}>
-            <AnimatePresence>
-              <motion.img
-                key={currentIconIndex}
-                src={promoIcons[currentIconIndex]}
-                alt="promo icon"
-                initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -20, filter: 'blur(10px)' }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  position: 'absolute',
-                }}
-              />
-            </AnimatePresence>
+            <span style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
+              fontSize: '13px',
+              color: 'rgba(255, 255, 255, 0.9)'
+            }}>
+              Get Your First Icon
+            </span>
+            <ArrowUpRight size={14} color="rgba(255, 255, 255, 0.9)" strokeWidth={2.5} />
           </div>
         </div>
-      </div>
+      </a>
     );
   }
 
@@ -1218,8 +1245,8 @@ export default function IOSHomeScreen() {
           height: '100vh',
           background: '#ffffff',
           borderLeft: '1px solid #e2e8f0',
-          display: 'flex',
-          flexDirection: 'column',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           position: 'fixed',
           right: 0,
           top: 0,
@@ -1236,14 +1263,14 @@ export default function IOSHomeScreen() {
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              marginBottom: '8px'
+              marginBottom: '12px'
             }}>
               <img 
                 src="/logo.svg" 
-                alt="iOS App Mockup Logo" 
+                alt="Iconcraft Logo" 
                 style={{
-                  width: '100px',
-                  height: '50px',
+                  width: '90px',
+                  height: '45px',
                   objectFit: 'contain'
                 }}
               />
@@ -1252,12 +1279,13 @@ export default function IOSHomeScreen() {
               margin: '0 0 8px 0',
               fontSize: '24px',
               fontWeight: '700',
-              color: '#1a1a1a',
-              fontFamily: SF_PRO_BOLD,
-              lineHeight: '1.2',
-              textAlign: 'center'
+              color: '#2b2b2b',
+              fontFamily: SF_PRO_MEDIUM,
+              lineHeight: '1.4',
+              textAlign: 'center',
+              marginBottom: '8px'
             }}>
-              iOS App Icon Mockup Generator
+              iOS 26 App Icon Mockup Generator
             </h1>
             <p style={{
               margin: '0',
@@ -1272,11 +1300,7 @@ export default function IOSHomeScreen() {
           </div>
 
           {/* Scrollable Content */}
-          <div style={{
-            flex: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden'
-          }}>
+          <div>
             
             {/* App Icon Section */}
             <div style={{
@@ -1330,7 +1354,7 @@ export default function IOSHomeScreen() {
                   maxLength={12}
                   placeholder="Enter app name"
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#209AF7';
+                    e.target.style.borderColor = '#03B1FC';
                     e.target.style.outline = 'none';
                   }}
                   onBlur={(e) => {
@@ -1346,7 +1370,7 @@ export default function IOSHomeScreen() {
                   style={{
                     width: '100%',
                     padding: '12px 16px',
-                    background: '#209AF7',
+                    background: '#03B1FC',
                     color: 'white',
                     border: 'none',
                     borderRadius: '10px',
@@ -1361,8 +1385,8 @@ export default function IOSHomeScreen() {
                     transition: 'background-color 0.2s ease',
                     outline: 'none'
                   }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1B87DB'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#209AF7'}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#028bcc'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#03B1FC'}
                 >
                   <Upload size={16} strokeWidth={2} /> Upload Icon
                 </button>
@@ -1463,9 +1487,9 @@ export default function IOSHomeScreen() {
                       onClick={() => setContainerStyle(style.id)}
                       style={{
                         padding: '10px 12px',
-                        background: containerStyle === style.id ? '#209AF7' : '#f8fafc',
+                        background: containerStyle === style.id ? '#03B1FC' : '#f8fafc',
                         color: containerStyle === style.id ? 'white' : '#374151',
-                        border: '1px solid ' + (containerStyle === style.id ? '#209AF7' : '#e2e8f0'),
+                        border: '1px solid ' + (containerStyle === style.id ? '#03B1FC' : '#e2e8f0'),
                         borderRadius: '8px',
                         cursor: 'pointer',
                         fontFamily: SF_PRO_REGULAR,
@@ -1478,14 +1502,14 @@ export default function IOSHomeScreen() {
                         if (containerStyle !== style.id) {
                           e.target.style.backgroundColor = '#f1f5f9';
                         } else {
-                          e.target.style.backgroundColor = '#1B87DB';
+                          e.target.style.backgroundColor = '#028bcc';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (containerStyle !== style.id) {
                           e.target.style.backgroundColor = '#f8fafc';
                         } else {
-                          e.target.style.backgroundColor = '#209AF7';
+                          e.target.style.backgroundColor = '#03B1FC';
                         }
                       }}
                     >
@@ -1590,7 +1614,7 @@ export default function IOSHomeScreen() {
                               borderRadius: '8px',
                               background: meshBg,
                               border: '1px solid #d1d5db',
-                              boxShadow: selectedMesh === i ? '0 0 0 2px rgba(32,154,247,0.55)' : 'none',
+                              boxShadow: selectedMesh === i ? '0 0 0 2px rgba(3, 177, 252, 0.55)' : 'none',
                               cursor: 'pointer',
                               outline: 'none',
                               transition: 'border-color 0.2s ease',
@@ -1813,7 +1837,7 @@ export default function IOSHomeScreen() {
                         flex: 1,
                         height: '4px',
                         WebkitAppearance: 'none',
-                        background: `linear-gradient(to right, #0f172a 0%, ${palette.length > 0 ? rgbToHex(palette[0]) : '#209AF7'} 100%)`,
+                        background: `linear-gradient(to right, #0f172a 0%, ${palette.length > 0 ? rgbToHex(palette[0]) : '#03B1FC'} 100%)`,
                         borderRadius: '2px',
                         outline: 'none',
                         cursor: 'pointer'
@@ -1882,9 +1906,9 @@ export default function IOSHomeScreen() {
                       onClick={() => setViewMode(mode.id)}
                       style={{
                         padding: '10px 8px',
-                        background: viewMode === mode.id ? '#209AF7' : '#f8fafc',
+                        background: viewMode === mode.id ? '#03B1FC' : '#f8fafc',
                         color: viewMode === mode.id ? 'white' : '#374151',
-                        border: '1px solid ' + (viewMode === mode.id ? '#209AF7' : '#e2e8f0'),
+                        border: '1px solid ' + (viewMode === mode.id ? '#03B1FC' : '#e2e8f0'),
                         borderRadius: '8px',
                         cursor: 'pointer',
                         fontFamily: SF_PRO_REGULAR,
@@ -1949,7 +1973,7 @@ export default function IOSHomeScreen() {
                       width: '44px',
                       height: '24px',
                       borderRadius: '12px',
-                      background: focusMode ? '#209AF7' : '#e2e8f0',
+                      background: focusMode ? '#03B1FC' : '#e2e8f0',
                       position: 'relative',
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
@@ -1997,7 +2021,7 @@ export default function IOSHomeScreen() {
                       width: '44px',
                       height: '24px',
                       borderRadius: '12px',
-                      background: hideOtherIcons ? '#209AF7' : '#e2e8f0',
+                      background: hideOtherIcons ? '#03B1FC' : '#e2e8f0',
                       position: 'relative',
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease'
@@ -2095,9 +2119,9 @@ export default function IOSHomeScreen() {
                       onClick={() => setSelectedDevice(key)}
                       style={{
                         padding: '12px 8px',
-                        background: selectedDevice === key ? '#209AF7' : '#f8fafc',
+                        background: selectedDevice === key ? '#03B1FC' : '#f8fafc',
                         color: selectedDevice === key ? 'white' : '#374151',
-                        border: '1px solid ' + (selectedDevice === key ? '#209AF7' : '#e2e8f0'),
+                        border: '1px solid ' + (selectedDevice === key ? '#03B1FC' : '#e2e8f0'),
                         borderRadius: '8px',
                         cursor: 'pointer',
                         fontFamily: SF_PRO_REGULAR,
@@ -2111,14 +2135,14 @@ export default function IOSHomeScreen() {
                         if (selectedDevice !== key) {
                           e.target.style.backgroundColor = '#f1f5f9';
                         } else {
-                          e.target.style.backgroundColor = '#1B87DB';
+                          e.target.style.backgroundColor = '#028bcc';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (selectedDevice !== key) {
                           e.target.style.backgroundColor = '#f8fafc';
                         } else {
-                          e.target.style.backgroundColor = '#209AF7';
+                          e.target.style.backgroundColor = '#03B1FC';
                         }
                       }}
                     >
@@ -2217,9 +2241,9 @@ export default function IOSHomeScreen() {
                       onClick={() => setFrameRatio(ratio)}
                       style={{
                         padding: '10px 6px',
-                        background: frameRatio === ratio ? '#209AF7' : '#f8fafc',
+                        background: frameRatio === ratio ? '#03B1FC' : '#f8fafc',
                         color: frameRatio === ratio ? 'white' : '#374151',
-                        border: '1px solid ' + (frameRatio === ratio ? '#209AF7' : '#e2e8f0'),
+                        border: '1px solid ' + (frameRatio === ratio ? '#03B1FC' : '#e2e8f0'),
                         borderRadius: '8px',
                         cursor: 'pointer',
                         fontFamily: SF_PRO_REGULAR,
@@ -2232,14 +2256,14 @@ export default function IOSHomeScreen() {
                         if (frameRatio !== ratio) {
                           e.target.style.backgroundColor = '#f1f5f9';
                         } else {
-                          e.target.style.backgroundColor = '#1B87DB';
+                          e.target.style.backgroundColor = '#028bcc';
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (frameRatio !== ratio) {
                           e.target.style.backgroundColor = '#f8fafc';
                         } else {
-                          e.target.style.backgroundColor = '#209AF7';
+                          e.target.style.backgroundColor = '#03B1FC';
                         }
                       }}
                     >
@@ -2255,7 +2279,7 @@ export default function IOSHomeScreen() {
                 style={{
                   width: '100%',
                   padding: '14px 20px',
-                  background: '#209AF7',
+                  background: '#03B1FC',
                   color: 'white',
                   border: 'none',
                   borderRadius: '12px',
@@ -2270,8 +2294,8 @@ export default function IOSHomeScreen() {
                   transition: 'background-color 0.2s ease',
                   outline: 'none'
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#1B87DB'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#209AF7'}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#028bcc'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#03B1FC'}
               >
                 <Download size={16} strokeWidth={2} /> Download Mockup
               </button>
@@ -2480,9 +2504,9 @@ export default function IOSHomeScreen() {
       </div>
       
       <a 
-        href="https://iconcraft.ai" 
+        href="https://iconcraft.app" 
         target="_blank" 
-        rel="noopener noreferrer" 
+        //rel="noopener noreferrer" 
         style={{
           position: 'fixed',
           bottom: '15px',
@@ -2630,7 +2654,7 @@ export default function IOSHomeScreen() {
                 onClick={handleCropSave}
                 style={{
                   padding: '12px 24px',
-                  background: '#209AF7',
+                  background: '#03B1FC',
                   color: 'white',
                   border: 'none',
                   borderRadius: '12px',
@@ -2640,7 +2664,7 @@ export default function IOSHomeScreen() {
                   fontWeight: '600',
                   transition: 'all 0.2s ease',
                   ':hover': {
-                    background: '#1B87DB'
+                    background: '#028bcc'
                   }
                 }}
               >
