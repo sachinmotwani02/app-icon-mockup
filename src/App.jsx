@@ -1098,6 +1098,111 @@ export default function IOSHomeScreen() {
     }
   };
 
+  const promoIcons = [
+    'src/assets/marketing-icons/promo-icon-1.png',
+    'src/assets/marketing-icons/promo-icon-2.png',
+    'src/assets/marketing-icons/promo-icon-3.png'
+  ];
+
+  function IconCraftPromoCard() {
+    const [currentIconIndex, setCurrentIconIndex] = useState(0);
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setCurrentIconIndex(prevIndex => (prevIndex + 1) % promoIcons.length);
+      }, 2500);
+      return () => clearInterval(interval);
+    }, []);
+
+    return (
+      <div
+        style={{
+          margin: '0 0 8px 0',
+          padding: '24px',
+          background: 'radial-gradient(circle at 50% 150%, #B9EAFF, #26CEF4)',
+          borderRadius: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: '100%',
+          position: 'relative',
+          boxSizing: 'border-box',
+        }}>
+        <h4 style={{
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 500,
+          fontSize: '20px',
+          color: 'white',
+          letterSpacing: '-0.05em',
+          lineHeight: '1.2',
+          margin: 0,
+          zIndex: 1,
+          textAlign: 'center',
+        }}>
+          Create beautiful<br />app icons without<br />any design skills
+        </h4>
+        <div style={{
+          position: 'relative',
+          marginTop: '20px',
+        }}>
+          {/* Background/border with blend mode */}
+          <div style={{
+            padding: '10px 18px',
+            border: '2px solid rgba(255, 255, 255, 0.6)',
+            borderRadius: '28px',
+            mixBlendMode: 'soft-light',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}>
+            {/* Dashed box (left) */}
+            <DashedSquircle size={56} cornerRadius={16} />
+            {/* Placeholder for the icon (center) */}
+            <div style={{ width: '70px', height: '56px' }}/>
+            {/* Dashed box (right) */}
+            <DashedSquircle size={56} cornerRadius={16} />
+          </div>
+
+          {/* Icon on top, with no blend mode, centered */}
+          <div style={{
+            position: 'absolute',
+            top: '-8px',
+            left: 'calc(50% - 38px)',
+            width: '76px',
+            height: '76px',
+          }}>
+            <AnimatePresence>
+              <motion.img
+                key={currentIconIndex}
+                src={promoIcons[currentIconIndex]}
+                alt="promo icon"
+                initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -20, filter: 'blur(10px)' }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  position: 'absolute',
+                }}
+              />
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const DashedSquircle = ({ size, cornerRadius }) => {
+    const path = getSvgPath({ width: size, height: size, cornerRadius, cornerSmoothing: 1 });
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d={path} stroke="rgba(255, 255, 255, 0.8)" strokeWidth="2" strokeDasharray="4 4" />
+      </svg>
+    );
+  };
+
   return (
     <>
       <style>{globalStyles}</style>
@@ -2072,6 +2177,7 @@ export default function IOSHomeScreen() {
             <div style={{
               padding: '20px 24px 32px 24px'
             }}>
+              <IconCraftPromoCard />
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -2372,6 +2478,28 @@ export default function IOSHomeScreen() {
           </motion.div>
         </div>
       </div>
+      
+      <a 
+        href="https://iconcraft.ai" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        style={{
+          position: 'fixed',
+          bottom: '15px',
+          left: '24px',
+          zIndex: 1001,
+          fontFamily: SF_PRO_REGULAR,
+          fontSize: '16px',
+          color: 'rgba(0, 0, 0, 0.4)',
+          textDecoration: 'none',
+          transition: 'color 0.2s ease-in-out'
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0, 0, 0, 0.7)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0, 0, 0, 0.4)'; }}
+      >
+        <span style={{ fontFamily: SF_PRO_BOLD }}>IconCraft</span>
+        {/* <span> - Designer-Grade app icons in seconds</span> */}
+      </a>
       
       {showCrop && (
         <div style={{
