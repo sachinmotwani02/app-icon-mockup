@@ -202,7 +202,137 @@ function getMeshOptions(palette) {
   ];
 }
 
+const promoIcons = [
+  'src/assets/marketing-icons/promo-icon-1.png',
+  'src/assets/marketing-icons/promo-icon-2.png',
+  'src/assets/marketing-icons/promo-icon-3.png'
+];
 
+const DashedSquircle = ({ size, cornerRadius }) => {
+  const path = getSvgPath({ width: size, height: size, cornerRadius, cornerSmoothing: 1 });
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d={path} stroke="rgba(255, 255, 255, 0.8)" strokeWidth="2" strokeDasharray="4 4" />
+    </svg>
+  );
+};
+
+function IconCraftPromoCard() {
+  const [currentIconIndex, setCurrentIconIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIconIndex(prevIndex => (prevIndex + 1) % promoIcons.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <a
+      href="https://iconcraft.app"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        textDecoration: 'none',
+        display: 'block',
+      }}
+    >
+      <div
+        style={{
+          margin: '0 0 12px 0',
+          padding: '16px',
+          background: 'radial-gradient(circle at 50% 150%,rgb(143, 219, 252), #26CEF4)',
+          borderRadius: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          width: '100%',
+          position: 'relative',
+          boxSizing: 'border-box',
+          cursor: 'pointer',
+        }}>
+        <h4 style={{
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 600,
+          fontSize: '22px',
+          color: 'white',
+          letterSpacing: '-0.05em',
+          lineHeight: '1.2',
+          margin: 0,
+          zIndex: 1,
+          textAlign: 'center',
+        }}>
+          Create beautiful<br />app icons without<br />any design skills
+        </h4>
+        <div style={{
+          position: 'relative',
+          marginTop: '32px',
+        }}>
+          {/* Background/border with blend mode */}
+          <div style={{
+            padding: '8px 15px',
+            border: '2px solid rgba(255, 255, 255, 0.6)',
+            borderRadius: '24px',
+            mixBlendMode: 'soft-light',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}>
+            {/* Dashed box (left) */}
+            <DashedSquircle size={48} cornerRadius={14} />
+            {/* Placeholder for the icon (center) */}
+            <div style={{ width: '60px', height: '48px' }}/>
+            {/* Dashed box (right) */}
+            <DashedSquircle size={48} cornerRadius={14} />
+          </div>
+
+          {/* Icon on top, with no blend mode, centered */}
+          <div style={{
+            position: 'absolute',
+            top: '-6px',
+            left: 'calc(50% - 32px)',
+            width: '64px',
+            height: '64px',
+          }}>
+            <AnimatePresence>
+              <motion.img
+                key={currentIconIndex}
+                src={promoIcons[currentIconIndex]}
+                alt="promo icon"
+                initial={{ opacity: 0, y: 20, filter: 'blur(5px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -20, filter: 'blur(5px)' }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  position: 'absolute',
+                }}
+              />
+            </AnimatePresence>
+          </div>
+        </div>
+         <div style={{
+          marginTop: '18px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <span style={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 500,
+            fontSize: '13px',
+            color: 'rgba(255, 255, 255, 0.9)'
+          }}>
+            Get Your First Icon
+          </span>
+          <ArrowUpRight size={14} color="rgba(255, 255, 255, 0.9)" strokeWidth={2.5} />
+        </div>
+      </div>
+    </a>
+  );
+}
 
 // iOS-Style Glass Dock Component with Displacement Effects
 function LiquidGlassDock({ children, style, cornerRadius, uiScale, frameScale, viewMode, isDragging }) {
@@ -315,26 +445,107 @@ function LiquidGlassDock({ children, style, cornerRadius, uiScale, frameScale, v
         ref={containerRef}
         style={{
           ...style,
-          backdropFilter: `blur(4px) url(#${shaderId}) brightness(1.1) saturate(1.3)`,
-          WebkitBackdropFilter: `blur(4px) url(#${shaderId}) brightness(1.1) saturate(1.3)`,
-          background: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
+          backdropFilter: `blur(12px) url(#${shaderId}) brightness(1.1) saturate(1.5)`,
+          WebkitBackdropFilter: `blur(12px) url(#${shaderId}) brightness(1.1) saturate(1.5)`,
+          background: 'rgba(255, 255, 255, 0.15)',
           borderRadius: cornerRadius || '32px',
-          // boxShadow: `
-          //   0 0 2px 1px rgba(0, 0, 0, 0.15) inset,
-          //   0 0 10px 4px rgba(0, 0, 0, 0.1) inset,
-          //   0px 4px 16px rgba(17, 17, 26, 0.05),
-          //   0px 8px 24px rgba(17, 17, 26, 0.05),
-          //   0px 16px 56px rgba(17, 17, 26, 0.05),
-          //   0px 4px 16px rgba(17, 17, 26, 0.05) inset,
-          //   0px 8px 24px rgba(17, 17, 26, 0.05) inset,
-          //   0px 16px 56px rgba(17, 17, 26, 0.05) inset
-          // `,
+          boxShadow: 'inset 0 1.5px 2px -1px rgba(255, 255, 255, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.15), 0px 12px 40px rgba(0, 0, 0, 0.25)',
         }}
       >
         {children}
       </div>
     </>
+  );
+}
+
+function CustomAppIcon({ size, scale, customAppIcon, customAppName, liquidGlassEffect, palette, onClick, hasLabel = true, isFocused = false }) {
+  const dominantColor = palette.length > 0 ? rgbToHex(palette[0]) : '#34C759';
+  const showPlaceholder = !customAppIcon;
+
+  const squircleStyle = {
+    backgroundColor: liquidGlassEffect && !showPlaceholder ? dominantColor : (showPlaceholder ? '#34C759' : 'transparent'),
+    cursor: showPlaceholder ? 'pointer' : 'default',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    border: showPlaceholder && !liquidGlassEffect ? '2px dashed rgba(255,255,255,0.5)' : 'none',
+    position: 'relative',
+    overflow: 'hidden',
+    padding: 0
+  };
+
+  const borderSpanStyle = {
+      position: 'absolute',
+      top: 0, left: 0, width: '100%', height: '100%',
+      pointerEvents: "none",
+      borderRadius: `${16 * scale}px`,
+      padding: "1px",
+      WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+      WebkitMaskComposite: "xor",
+      maskComposite: "exclude",
+  };
+
+  return (
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      position: 'relative', 
+      zIndex: isFocused ? 25 : 1, 
+      filter: isFocused ? 'brightness(1.1)' : 'none',
+      transition: 'filter 0.3s ease'
+    }}>
+      <Squircle cornerRadius={16 * scale} cornerSmoothing={1} width={size} height={size} onClick={showPlaceholder ? onClick : undefined} style={squircleStyle}>
+        {customAppIcon ? (
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <img
+              src={customAppIcon}
+              alt={customAppName}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                opacity: liquidGlassEffect ? 0.9 : 1,
+                imageRendering: 'auto',
+                display: 'block',
+              }}
+            />
+            {liquidGlassEffect && (
+              <>
+                <span style={{ ...borderSpanStyle, background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, transparent 60%)', mixBlendMode: 'soft-light' }} />
+                <span style={{ ...borderSpanStyle, background: 'linear-gradient(135deg, transparent 60%, rgba(255, 255, 255, 0.3) 100%)', mixBlendMode: 'soft-light' }} />
+                <span style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', boxShadow: 'inset 0px 1px 2px rgba(255,255,255,0.4)' }} />
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+            <div style={{ width: `${24 * scale}px`, height: `${24 * scale}px`, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: `${16 * scale}px`, height: `${2 * scale}px`, background: 'white' }}></div>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: `${2 * scale}px`, height: `${16 * scale}px`, background: 'white' }}></div>
+            </div>
+            <span style={{ color: 'white', fontSize: `${11 * scale}px`, marginTop: `${2 * scale}px`, fontWeight: '500' }}>TAP</span>
+          </>
+        )}
+      </Squircle>
+      {hasLabel && (
+        <span style={{
+          color: 'white',
+          fontSize: `${12 * scale}px`,
+          marginTop: `${6 * scale}px`,
+          fontFamily: SF_PRO_REGULAR,
+          textAlign: 'center',
+          maxWidth: `${60 * scale}px`,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          textShadow: isFocused ? '0 0 8px rgba(255,255,255,0.3)' : 'none'
+        }}>
+          {customAppName}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -375,6 +586,7 @@ export default function IOSHomeScreen() {
   const [randomizeKey, setRandomizeKey] = useState(0);
   const [selectedDevice, setSelectedDevice] = useState('black-titanium');
   const [selectedWallpaper, setSelectedWallpaper] = useState('ios26-light');
+  const [liquidGlassEffect, setLiquidGlassEffect] = useState(true);
 
   // Wallpaper options with beautiful names and suggested background colors
   const wallpaperOptions = [
@@ -811,81 +1023,18 @@ export default function IOSHomeScreen() {
           
           if (isCustomApp) {
             return (
-              <div key={index} style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                position: 'relative',
-                zIndex: isCustomApp ? (focusMode ? 25 : 1) : 1,
-                filter: focusMode ? 'brightness(1.1)' : 'none'
-              }}>
-                <Squircle
-                  cornerRadius={16 * uiScale * frameSize.scale}
-                  cornerSmoothing={1}
-                  width={iconSize}
-                  height={iconSize}
-                  onClick={!customAppIcon ? handleIconClick : undefined}
-                  style={{
-                    backgroundColor: customAppIcon ? 'transparent' : '#34C759',
-                    cursor: customAppIcon ? 'default' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column',
-                    border: customAppIcon ? 'none' : '2px dashed rgba(255,255,255,0.5)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    padding: 0
-                  }}
-                >
-                  {customAppIcon ? (
-                    <img
-                      src={customAppIcon}
-                      alt={customAppName}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        imageRendering: 'auto',
-                        display: 'block',
-                      }}
-                    />
-                  ) : (
-                    <>
-                      <div style={{
-                        width: `${24 * uiScale * frameSize.scale}px`,
-                        height: `${24 * uiScale * frameSize.scale}px`,
-                        position: 'relative'
-                      }}>
-                        <div style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          width: `${16 * uiScale * frameSize.scale}px`,
-                          height: `${2 * uiScale * frameSize.scale}px`,
-                          background: 'white'
-                        }}></div>
-                        <div style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          width: `${2 * uiScale * frameSize.scale}px`,
-                          height: `${16 * uiScale * frameSize.scale}px`,
-                          background: 'white'
-                        }}></div>
-                      </div>
-                      <span style={{
-                        color: 'white',
-                        fontSize: `${11 * uiScale * frameSize.scale}px`,
-                        marginTop: `${2 * uiScale * frameSize.scale}px`,
-                        fontWeight: '500'
-                      }}>TAP</span>
-                    </>
-                  )}
-                </Squircle>
-              </div>
+              <CustomAppIcon
+                key="custom-dock-icon"
+                size={iconSize}
+                scale={uiScale * frameSize.scale}
+                customAppIcon={customAppIcon}
+                customAppName={customAppName}
+                liquidGlassEffect={liquidGlassEffect}
+                palette={palette}
+                onClick={handleIconClick}
+                hasLabel={false}
+                isFocused={focusMode}
+              />
             );
           } else {
             const app = dockApps[dockRenderCounter++];
@@ -944,96 +1093,18 @@ export default function IOSHomeScreen() {
 
           if (isCustomApp) {
             return (
-              <div key={index} style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                position: 'relative',
-                zIndex: isCustomApp ? (focusMode ? 25 : 1) : 1,
-                filter: focusMode ? 'brightness(1.1)' : 'none',
-                transition: 'filter 0.3s ease'
-              }}>
-                <Squircle
-                  cornerRadius={16 * uiScale * frameSize.scale}
-                  cornerSmoothing={1}
-                  width={iconSize}
-                  height={iconSize}
-                  onClick={!customAppIcon ? handleIconClick : undefined}
-                  style={{
-                    backgroundColor: customAppIcon ? 'transparent' : '#34C759',
-                    cursor: customAppIcon ? 'default' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column',
-                    border: customAppIcon ? 'none' : '2px dashed rgba(255,255,255,0.5)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    padding: 0
-                  }}
-                >
-                  {customAppIcon ? (
-                    <img
-                      src={customAppIcon}
-                      alt={customAppName}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        imageRendering: 'auto',
-                        display: 'block',
-                      }}
-                    />
-                  ) : (
-                    <>
-                      <div style={{
-                        width: `${24 * uiScale * frameSize.scale}px`,
-                        height: `${24 * uiScale * frameSize.scale}px`,
-                        position: 'relative'
-                      }}>
-                        <div style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          width: `${16 * uiScale * frameSize.scale}px`,
-                          height: `${2 * uiScale * frameSize.scale}px`,
-                          background: 'white'
-                        }}></div>
-                        <div style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          width: `${2 * uiScale * frameSize.scale}px`,
-                          height: `${16 * uiScale * frameSize.scale}px`,
-                          background: 'white'
-                        }}></div>
-                      </div>
-                      <span style={{
-                        color: 'white',
-                        fontSize: `${11 * uiScale * frameSize.scale}px`,
-                        marginTop: `${2 * uiScale * frameSize.scale}px`,
-                        fontWeight: '500'
-                      }}>TAP</span>
-                    </>
-                  )}
-                </Squircle>
-                <span style={{
-                  color: 'white',
-                  fontSize: `${12 * uiScale * frameSize.scale}px`,
-                  marginTop: `${6 * uiScale * frameSize.scale}px`,
-                  fontFamily: SF_PRO_REGULAR,
-                  textAlign: 'center',
-                  maxWidth: `${60 * uiScale * frameSize.scale}px`,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  textShadow: focusMode ? '0 0 8px rgba(255,255,255,0.3)' : 'none'
-                }}>
-                  {customAppName}
-                </span>
-              </div>
+              <CustomAppIcon
+                key="custom-grid-icon"
+                size={iconSize}
+                scale={uiScale * frameSize.scale}
+                customAppIcon={customAppIcon}
+                customAppName={customAppName}
+                liquidGlassEffect={liquidGlassEffect}
+                palette={palette}
+                onClick={handleIconClick}
+                hasLabel={true}
+                isFocused={focusMode}
+              />
             );
           } else {
             const app = gridApps[appRenderCounter++];
@@ -1076,8 +1147,8 @@ export default function IOSHomeScreen() {
 
       const dataUrl = await domtoimage.toPng(frameRef.current, {
         quality: 1.0,
-        pixelRatio: 3,
-        bgcolor: 'transparent',
+        pixelRatio: 4,
+        bgcolor: containerStyle === 'wallpaper' ? wallpaperBgColor : 'transparent',
         style: {
           // Force font rendering to be explicit
           fontDisplay: 'block',
@@ -1088,146 +1159,19 @@ export default function IOSHomeScreen() {
       });
 
       const link = document.createElement('a');
-      const base = uploadedFileName || 'appicon';
-      link.download = `${base}mockup.png`;
+      const safeAppName = (customAppName || 'app-icon')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '') || 'download';
+        
+      link.download = `iconcraft-mockup-${safeAppName}.png`;
       link.href = dataUrl;
       link.click();
     } catch (error) {
       console.error('Download failed:', error);
       alert('Download failed. Please try again.');
     }
-  };
-
-  const promoIcons = [
-    'src/assets/marketing-icons/promo-icon-1.png',
-    'src/assets/marketing-icons/promo-icon-2.png',
-    'src/assets/marketing-icons/promo-icon-3.png'
-  ];
-
-  function IconCraftPromoCard() {
-    const [currentIconIndex, setCurrentIconIndex] = useState(0);
-
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setCurrentIconIndex(prevIndex => (prevIndex + 1) % promoIcons.length);
-      }, 4000);
-      return () => clearInterval(interval);
-    }, []);
-
-    return (
-      <a
-        href="https://iconcraft.app"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          textDecoration: 'none',
-          display: 'block',
-        }}
-      >
-        <div
-          style={{
-            margin: '0 0 12px 0',
-            padding: '16px',
-            background: 'radial-gradient(circle at 50% 150%,rgb(143, 219, 252), #26CEF4)',
-            borderRadius: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
-            position: 'relative',
-            boxSizing: 'border-box',
-            cursor: 'pointer',
-          }}>
-          <h4 style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 600,
-            fontSize: '22px',
-            color: 'white',
-            letterSpacing: '-0.05em',
-            lineHeight: '1.2',
-            margin: 0,
-            zIndex: 1,
-            textAlign: 'center',
-          }}>
-            Create beautiful<br />app icons without<br />any design skills
-          </h4>
-          <div style={{
-            position: 'relative',
-            marginTop: '32px',
-          }}>
-            {/* Background/border with blend mode */}
-            <div style={{
-              padding: '8px 15px',
-              border: '2px solid rgba(255, 255, 255, 0.6)',
-              borderRadius: '24px',
-              mixBlendMode: 'soft-light',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}>
-              {/* Dashed box (left) */}
-              <DashedSquircle size={48} cornerRadius={14} />
-              {/* Placeholder for the icon (center) */}
-              <div style={{ width: '60px', height: '48px' }}/>
-              {/* Dashed box (right) */}
-              <DashedSquircle size={48} cornerRadius={14} />
-            </div>
-
-            {/* Icon on top, with no blend mode, centered */}
-            <div style={{
-              position: 'absolute',
-              top: '-6px',
-              left: 'calc(50% - 32px)',
-              width: '64px',
-              height: '64px',
-            }}>
-              <AnimatePresence>
-                <motion.img
-                  key={currentIconIndex}
-                  src={promoIcons[currentIconIndex]}
-                  alt="promo icon"
-                  initial={{ opacity: 0, y: 20, filter: 'blur(5px)' }}
-                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, y: -20, filter: 'blur(5px)' }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    position: 'absolute',
-                  }}
-                />
-              </AnimatePresence>
-            </div>
-          </div>
-           <div style={{
-            marginTop: '18px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}>
-            <span style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 500,
-              fontSize: '13px',
-              color: 'rgba(255, 255, 255, 0.9)'
-            }}>
-              Get Your First Icon
-            </span>
-            <ArrowUpRight size={14} color="rgba(255, 255, 255, 0.9)" strokeWidth={2.5} />
-          </div>
-        </div>
-      </a>
-    );
-  }
-
-  const DashedSquircle = ({ size, cornerRadius }) => {
-    const path = getSvgPath({ width: size, height: size, cornerRadius, cornerSmoothing: 1 });
-    return (
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d={path} stroke="rgba(255, 255, 255, 0.8)" strokeWidth="2" strokeDasharray="4 4" />
-      </svg>
-    );
   };
 
   return (
@@ -1263,7 +1207,7 @@ export default function IOSHomeScreen() {
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              marginBottom: '12px'
+              marginBottom: '16px'
             }}>
               <img 
                 src="/logo.svg" 
@@ -1271,19 +1215,22 @@ export default function IOSHomeScreen() {
                 style={{
                   width: '90px',
                   height: '45px',
-                  objectFit: 'contain'
+                  objectFit: 'contain',
+                  opacity: 0.95
                 }}
               />
             </div>
             <h1 style={{
               margin: '0 0 8px 0',
-              fontSize: '24px',
+              fontSize: '28px',
               fontWeight: '700',
+              letterSpacing: '-0.02em',
               color: '#2b2b2b',
               fontFamily: SF_PRO_MEDIUM,
               lineHeight: '1.4',
               textAlign: 'center',
-              marginBottom: '8px'
+              marginBottom: '12px',
+               opacity: 0.9
             }}>
               iOS 26 App Icon Mockup Generator
             </h1>
@@ -1295,7 +1242,7 @@ export default function IOSHomeScreen() {
               lineHeight: '1.4',
               textAlign: 'center'
             }}>
-              Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.
+            Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.              
             </p>
           </div>
 
@@ -1364,7 +1311,7 @@ export default function IOSHomeScreen() {
               </div>
 
               {/* App Icon */}
-              <div style={{ marginBottom: customAppIcon ? '16px' : '0' }}>
+              <div style={{ marginBottom: '16px' }}>
                 <button
                   onClick={handleIconClick}
                   style={{
@@ -1406,7 +1353,8 @@ export default function IOSHomeScreen() {
                   background: '#f1f5f9',
                   borderRadius: '12px',
                   textAlign: 'center',
-                  border: '1px solid #e2e8f0'
+                  border: '1px solid #e2e8f0',
+                  marginBottom: '16px'
                 }}>
                   <Squircle
                     cornerRadius={16}
@@ -1437,6 +1385,47 @@ export default function IOSHomeScreen() {
                   }}>Preview</p>
                 </div>
               )}
+
+              {/* Liquid Glass Toggle */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                <label style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  fontFamily: SF_PRO_MEDIUM,
+                  cursor: 'pointer'
+                }} onClick={() => setLiquidGlassEffect(!liquidGlassEffect)}>
+                  Liquid Glass Effect
+                </label>
+                <div 
+                  onClick={() => setLiquidGlassEffect(!liquidGlassEffect)}
+                  style={{
+                    width: '44px',
+                    height: '24px',
+                    borderRadius: '12px',
+                    background: liquidGlassEffect ? '#03B1FC' : '#e2e8f0',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                >
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    background: 'white',
+                    position: 'absolute',
+                    top: '2px',
+                    left: liquidGlassEffect ? '22px' : '2px',
+                    transition: 'left 0.2s ease',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                  }} />
+                </div>
+              </div>
             </div>
 
             {/* Background Section */}
