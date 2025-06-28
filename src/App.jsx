@@ -203,9 +203,9 @@ function getMeshOptions(palette) {
 }
 
 const promoIcons = [
-  'src/assets/marketing-icons/promo-icon-1.png',
-  'src/assets/marketing-icons/promo-icon-2.png',
-  'src/assets/marketing-icons/promo-icon-3.png'
+  '/marketing-icons/promo-icon-1.png',
+  '/marketing-icons/promo-icon-2.png',
+  '/marketing-icons/promo-icon-3.png'
 ];
 
 const DashedSquircle = ({ size, cornerRadius }) => {
@@ -658,7 +658,7 @@ export default function IOSHomeScreen() {
   const deviceOptions = {
     'black-titanium': {
       name: 'Black Titanium',
-      image: 'src/assets/black-titanium-iphone16pro.png',
+      image: '/black-titanium-iphone16pro.png',
       frameWidth: 629,
       frameHeight: 1304,
       screenWidth: 582,
@@ -666,7 +666,7 @@ export default function IOSHomeScreen() {
     },
     'natural-titanium': {
       name: 'Natural Titanium',
-      image: 'src/assets/natural-titanium-iphone16pro.png',
+      image: '/natural-titanium-iphone16pro.png',
       frameWidth: 629,
       frameHeight: 1304,
       screenWidth: 582,
@@ -676,49 +676,49 @@ export default function IOSHomeScreen() {
 
   // Define all available apps
   const allApps = [
-    { name: "Messages", src: "src/assets/icons/imessage.png" },
-    { name: "Calendar", src: "src/assets/icons/calender.png" },
-    { name: "Photos", src: "src/assets/icons/gallery.png" },
-    { name: "Camera", src: "src/assets/icons/camera.png" },
-    { name: "Contacts", src: "src/assets/icons/contacts.png" },
-    { name: "Weather", src: "src/assets/icons/weather.png" },
-    { name: "Notes", src: "src/assets/icons/notes.png" },
-    { name: "App Store", src: "src/assets/icons/appstore.png" },
-    { name: "Books", src: "src/assets/icons/books.png" },
-    { name: "Calculator", src: "src/assets/icons/calculator.png" },
-    { name: "Wallet", src: "src/assets/icons/wallet.png" },
-    { name: "Safari", src: "src/assets/icons/safari.png" },
-    { name: "Reminders", src: "src/assets/icons/reminder.png" },
-    { name: "Apple Music", src: "src/assets/icons/applemusic.png" },
-    { name: "Maps", src: "src/assets/icons/maps.png" },
-    { name: "Home", src: "src/assets/icons/home.png" },
-    { name: "Health", src: "src/assets/icons/health.png" },
-    { name: "Find My", src: "src/assets/icons/findmyiphone.png" },
-    { name: "Clock", src: "src/assets/icons/clock.png" },
-    { name: "FaceTime", src: "src/assets/icons/facetime.png" },
-    { name: "Files", src: "src/assets/icons/files.png" },
+    { name: "Messages", src: "/icons/imessage.png" },
+    { name: "Calendar", src: "/icons/calender.png" },
+    { name: "Photos", src: "/icons/gallery.png" },
+    { name: "Camera", src: "/icons/camera.png" },
+    { name: "Contacts", src: "/icons/contacts.png" },
+    { name: "Weather", src: "/icons/weather.png" },
+    { name: "Notes", src: "/icons/notes.png" },
+    { name: "App Store", src: "/icons/appstore.png" },
+    { name: "Books", src: "/icons/books.png" },
+    { name: "Calculator", src: "/icons/calculator.png" },
+    { name: "Wallet", src: "/icons/wallet.png" },
+    { name: "Safari", src: "/icons/safari.png" },
+    { name: "Reminders", src: "/icons/reminder.png" },
+    { name: "Apple Music", src: "/icons/applemusic.png" },
+    { name: "Maps", src: "/icons/maps.png" },
+    { name: "Home", src: "/icons/home.png" },
+    { name: "Health", src: "/icons/health.png" },
+    { name: "Find My", src: "/icons/findmyiphone.png" },
+    { name: "Clock", src: "/icons/clock.png" },
+    { name: "FaceTime", src: "/icons/facetime.png" },
+    { name: "Files", src: "/icons/files.png" },
   ];
 
   // Set default apps for initial view
   const defaultGridApps = [
-    { name: "Calender", src: "src/assets/icons/calender.png" },
-    { name: "Clock", src: "src/assets/icons/clock.png" },
-    { name: "Facetime", src: "src/assets/icons/facetime.png" },
-    { name: "App Store", src: "src/assets/icons/appstore.png" },
-    { name: "Reminders", src: "src/assets/icons/reminder.png" },
-    { name: "Photos", src: "src/assets/icons/gallery.png" },
-    { name: "Camera", src: "src/assets/icons/camera.png" },
-    { name: "Wallet", src: "src/assets/icons/wallet.png" },
-    { name: "Weather", src: "src/assets/icons/weather.png" },
-    { name: "Notes", src: "src/assets/icons/notes.png" },
-    { name: "Books", src: "src/assets/icons/books.png" },
-    { name: "Maps", src: "src/assets/icons/maps.png" },
+    { name: "Calender", src: "/icons/calender.png" },
+    { name: "Clock", src: "/icons/clock.png" },
+    { name: "Facetime", src: "/icons/facetime.png" },
+    { name: "App Store", src: "/icons/appstore.png" },
+    { name: "Reminders", src: "/icons/reminder.png" },
+    { name: "Photos", src: "/icons/gallery.png" },
+    { name: "Camera", src: "/icons/camera.png" },
+    { name: "Wallet", src: "/icons/wallet.png" },
+    { name: "Weather", src: "/icons/weather.png" },
+    { name: "Notes", src: "/icons/notes.png" },
+    { name: "Books", src: "/icons/books.png" },
+    { name: "Maps", src: "/icons/maps.png" },
   ];
   const defaultDockApps = [
-      { name: "Phone", src: "src/assets/icons/call.png" },
-      { name: "Safari", src: "src/assets/icons/safari.png" },
-      { name: "Apple Music", src: "src/assets/icons/applemusic.png" },
-      { name: "iMessage", src: "src/assets/icons/imessage.png" }
+      { name: "Phone", src: "/icons/call.png" },
+      { name: "Safari", src: "/icons/safari.png" },
+      { name: "Apple Music", src: "/icons/applemusic.png" },
+      { name: "iMessage", src: "/icons/imessage.png" }
   ];
 
   const [gridApps, setGridApps] = useState(defaultGridApps);
@@ -869,7 +869,7 @@ export default function IOSHomeScreen() {
     // If wallpaper style is selected, use the selected wallpaper image
     if (containerStyle === 'wallpaper') {
       const selectedWallpaperFile = wallpaperOptions.find(w => w.id === selectedWallpaper)?.file || 'ios26-light.jpg';
-      return `url('src/assets/${selectedWallpaperFile}')`;
+      return `url('/${selectedWallpaperFile}')`;
     }
     
     // If no custom icon uploaded yet, keep wallpaper black
@@ -1682,7 +1682,7 @@ export default function IOSHomeScreen() {
                             cursor: 'pointer',
                             outline: 'none',
                             transition: 'all 0.2s ease',
-                            backgroundImage: `url('src/assets/${wallpaper.file}')`,
+                            backgroundImage: `url('/${wallpaper.file}')`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             boxShadow: selectedWallpaper === wallpaper.id ? '0 0 0 1px rgba(59, 130, 246, 0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
