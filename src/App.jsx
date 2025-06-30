@@ -674,51 +674,53 @@ export default function IOSHomeScreen() {
     }
   };
 
+  const base = import.meta.env.BASE_URL;
+
   // Define all available apps
   const allApps = [
-    { name: "Messages", src: "/icons/imessage.png" },
-    { name: "Calendar", src: "/icons/calender.png" },
-    { name: "Photos", src: "/icons/gallery.png" },
-    { name: "Camera", src: "/icons/camera.png" },
-    { name: "Contacts", src: "/icons/contacts.png" },
-    { name: "Weather", src: "/icons/weather.png" },
-    { name: "Notes", src: "/icons/notes.png" },
-    { name: "App Store", src: "/icons/appstore.png" },
-    { name: "Books", src: "/icons/books.png" },
-    { name: "Calculator", src: "/icons/calculator.png" },
-    { name: "Wallet", src: "/icons/wallet.png" },
-    { name: "Safari", src: "/icons/safari.png" },
-    { name: "Reminders", src: "/icons/reminder.png" },
-    { name: "Apple Music", src: "/icons/applemusic.png" },
-    { name: "Maps", src: "/icons/maps.png" },
-    { name: "Home", src: "/icons/home.png" },
-    { name: "Health", src: "/icons/health.png" },
-    { name: "Find My", src: "/icons/findmyiphone.png" },
-    { name: "Clock", src: "/icons/clock.png" },
-    { name: "FaceTime", src: "/icons/facetime.png" },
-    { name: "Files", src: "/icons/files.png" },
+    { name: "Messages", src: `${base}icons/imessage.png` },
+    { name: "Calendar", src: `${base}icons/calender.png` },
+    { name: "Photos", src: `${base}icons/gallery.png` },
+    { name: "Camera", src: `${base}icons/camera.png` },
+    { name: "Contacts", src: `${base}icons/contacts.png` },
+    { name: "Weather", src: `${base}icons/weather.png` },
+    { name: "Notes", src: `${base}icons/notes.png` },
+    { name: "App Store", src: `${base}icons/appstore.png` },
+    { name: "Books", src: `${base}icons/books.png` },
+    { name: "Calculator", src: `${base}icons/calculator.png` },
+    { name: "Wallet", src: `${base}icons/wallet.png` },
+    { name: "Safari", src: `${base}icons/safari.png` },
+    { name: "Reminders", src: `${base}icons/reminder.png` },
+    { name: "Apple Music", src: `${base}icons/applemusic.png` },
+    { name: "Maps", src: `${base}icons/maps.png` },
+    { name: "Home", src: `${base}icons/home.png` },
+    { name: "Health", src: `${base}icons/health.png` },
+    { name: "Find My", src: `${base}icons/findmyiphone.png` },
+    { name: "Clock", src: `${base}icons/clock.png` },
+    { name: "FaceTime", src: `${base}icons/facetime.png` },
+    { name: "Files", src: `${base}icons/files.png` },
   ];
 
   // Set default apps for initial view
   const defaultGridApps = [
-    { name: "Calender", src: "/icons/calender.png" },
-    { name: "Clock", src: "/icons/clock.png" },
-    { name: "Facetime", src: "/icons/facetime.png" },
-    { name: "App Store", src: "/icons/appstore.png" },
-    { name: "Reminders", src: "/icons/reminder.png" },
-    { name: "Photos", src: "/icons/gallery.png" },
-    { name: "Camera", src: "/icons/camera.png" },
-    { name: "Wallet", src: "/icons/wallet.png" },
-    { name: "Weather", src: "/icons/weather.png" },
-    { name: "Notes", src: "/icons/notes.png" },
-    { name: "Books", src: "/icons/books.png" },
-    { name: "Maps", src: "/icons/maps.png" },
+    { name: "Calender", src: `${base}icons/calender.png` },
+    { name: "Clock", src: `${base}icons/clock.png` },
+    { name: "Facetime", src: `${base}icons/facetime.png` },
+    { name: "App Store", src: `${base}icons/appstore.png` },
+    { name: "Reminders", src: `${base}icons/reminder.png` },
+    { name: "Photos", src: `${base}icons/gallery.png` },
+    { name: "Camera", src: `${base}icons/camera.png` },
+    { name: "Wallet", src: `${base}icons/wallet.png` },
+    { name: "Weather", src: `${base}icons/weather.png` },
+    { name: "Notes", src: `${base}icons/notes.png` },
+    { name: "Books", src: `${base}icons/books.png` },
+    { name: "Maps", src: `${base}icons/maps.png` },
   ];
   const defaultDockApps = [
-      { name: "Phone", src: "/icons/call.png" },
-      { name: "Safari", src: "/icons/safari.png" },
-      { name: "Apple Music", src: "/icons/applemusic.png" },
-      { name: "iMessage", src: "/icons/imessage.png" }
+      { name: "Phone", src: `${base}icons/call.png` },
+      { name: "Safari", src: `${base}icons/safari.png` },
+      { name: "Apple Music", src: `${base}icons/applemusic.png` },
+      { name: "iMessage", src: `${base}icons/imessage.png` }
   ];
 
   const [gridApps, setGridApps] = useState(defaultGridApps);

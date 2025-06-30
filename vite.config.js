@@ -1,11 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/', // 👈 critical when using proxy
+  base: '/app-icon-mockup/',
   build: {
     outDir: 'dist',
   },
-});
+})
