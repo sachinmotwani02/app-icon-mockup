@@ -325,7 +325,7 @@ function IconCraftPromoCard() {
             fontSize: '13px',
             color: 'rgba(255, 255, 255, 0.9)'
           }}>
-            Get Your First Icon
+            Explore IconCraft
           </span>
           <ArrowUpRight size={14} color="rgba(255, 255, 255, 0.9)" strokeWidth={2.5} />
         </div>
@@ -458,18 +458,18 @@ function LiquidGlassDock({ children, style, cornerRadius, uiScale, frameScale, v
   );
 }
 
-function CustomAppIcon({ size, scale, customAppIcon, customAppName, liquidGlassEffect, palette, onClick, hasLabel = true, isFocused = false }) {
+function CustomAppIcon({ size, scale, customAppIcon, customAppName, edgeHighlighting, palette, onClick, hasLabel = true, isFocused = false }) {
   const dominantColor = palette.length > 0 ? rgbToHex(palette[0]) : '#34C759';
   const showPlaceholder = !customAppIcon;
 
   const squircleStyle = {
-    backgroundColor: liquidGlassEffect && !showPlaceholder ? dominantColor : (showPlaceholder ? '#34C759' : 'transparent'),
+    backgroundColor: edgeHighlighting && !showPlaceholder ? dominantColor : (showPlaceholder ? '#34C759' : 'transparent'),
     cursor: showPlaceholder ? 'pointer' : 'default',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
-    border: showPlaceholder && !liquidGlassEffect ? '2px dashed rgba(255,255,255,0.5)' : 'none',
+    border: showPlaceholder && !edgeHighlighting ? '2px dashed rgba(255,255,255,0.5)' : 'none',
     position: 'relative',
     overflow: 'hidden',
     padding: 0
@@ -506,16 +506,16 @@ function CustomAppIcon({ size, scale, customAppIcon, customAppName, liquidGlassE
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                opacity: liquidGlassEffect ? 0.9 : 1,
+                opacity: edgeHighlighting ? 0.95 : 1,
                 imageRendering: 'auto',
                 display: 'block',
               }}
             />
-            {liquidGlassEffect && (
+            {edgeHighlighting && (
               <>
                 <span style={{ ...borderSpanStyle, background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, transparent 60%)', mixBlendMode: 'soft-light' }} />
                 <span style={{ ...borderSpanStyle, background: 'linear-gradient(135deg, transparent 60%, rgba(255, 255, 255, 0.3) 100%)', mixBlendMode: 'soft-light' }} />
-                <span style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', boxShadow: 'inset 0px 1px 2px rgba(255,255,255,0.4)' }} />
+                <span style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', boxShadow: 'inset 0px 1px 2px rgba(255,255,255,0.1)' }} />
               </>
             )}
           </div>
@@ -586,7 +586,7 @@ export default function IOSHomeScreen() {
   const [randomizeKey, setRandomizeKey] = useState(0);
   const [selectedDevice, setSelectedDevice] = useState('black-titanium');
   const [selectedWallpaper, setSelectedWallpaper] = useState('ios26-light');
-  const [liquidGlassEffect, setLiquidGlassEffect] = useState(true);
+  const [edgeHighlighting, setEdgeHighlighting] = useState(true);
 
   // Wallpaper options with beautiful names and suggested background colors
   const wallpaperOptions = [
@@ -1029,7 +1029,7 @@ export default function IOSHomeScreen() {
                 scale={uiScale * frameSize.scale}
                 customAppIcon={customAppIcon}
                 customAppName={customAppName}
-                liquidGlassEffect={liquidGlassEffect}
+                edgeHighlighting={edgeHighlighting}
                 palette={palette}
                 onClick={handleIconClick}
                 hasLabel={false}
@@ -1099,7 +1099,7 @@ export default function IOSHomeScreen() {
                 scale={uiScale * frameSize.scale}
                 customAppIcon={customAppIcon}
                 customAppName={customAppName}
-                liquidGlassEffect={liquidGlassEffect}
+                edgeHighlighting={edgeHighlighting}
                 palette={palette}
                 onClick={handleIconClick}
                 hasLabel={true}
@@ -1386,7 +1386,7 @@ export default function IOSHomeScreen() {
                 </div>
               )}
 
-              {/* Liquid Glass Toggle */}
+              {/* Edge Highlighting Toggle */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1398,16 +1398,16 @@ export default function IOSHomeScreen() {
                   color: '#374151',
                   fontFamily: SF_PRO_MEDIUM,
                   cursor: 'pointer'
-                }} onClick={() => setLiquidGlassEffect(!liquidGlassEffect)}>
-                  Liquid Glass Effect
+                }} onClick={() => setEdgeHighlighting(!edgeHighlighting)}>
+                  Edge Highlighting
                 </label>
                 <div 
-                  onClick={() => setLiquidGlassEffect(!liquidGlassEffect)}
+                  onClick={() => setEdgeHighlighting(!edgeHighlighting)}
                   style={{
                     width: '44px',
                     height: '24px',
                     borderRadius: '12px',
-                    background: liquidGlassEffect ? '#03B1FC' : '#e2e8f0',
+                    background: edgeHighlighting ? '#03B1FC' : '#e2e8f0',
                     position: 'relative',
                     cursor: 'pointer',
                     transition: 'background-color 0.2s ease'
@@ -1420,7 +1420,7 @@ export default function IOSHomeScreen() {
                     background: 'white',
                     position: 'absolute',
                     top: '2px',
-                    left: liquidGlassEffect ? '22px' : '2px',
+                    left: edgeHighlighting ? '22px' : '2px',
                     transition: 'left 0.2s ease',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                   }} />
