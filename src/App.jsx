@@ -219,13 +219,19 @@ const DashedSquircle = ({ size, cornerRadius }) => {
 
 function IconCraftPromoCard() {
   const [currentIconIndex, setCurrentIconIndex] = useState(0);
+  const base = import.meta.env.BASE_URL;
+  const promoIcons = [
+    `${base}marketing-icons/promo-icon-1.png`,
+    `${base}marketing-icons/promo-icon-2.png`,
+    `${base}marketing-icons/promo-icon-3.png`
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIconIndex(prevIndex => (prevIndex + 1) % promoIcons.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [promoIcons]);
 
   return (
     <a
@@ -871,7 +877,7 @@ export default function IOSHomeScreen() {
     // If wallpaper style is selected, use the selected wallpaper image
     if (containerStyle === 'wallpaper') {
       const selectedWallpaperFile = wallpaperOptions.find(w => w.id === selectedWallpaper)?.file || 'ios26-light.jpg';
-      return `url('/${selectedWallpaperFile}')`;
+      return `url("${base}${selectedWallpaperFile}")`;
     }
     
     // If no custom icon uploaded yet, keep wallpaper black
@@ -1212,7 +1218,7 @@ export default function IOSHomeScreen() {
               marginBottom: '16px'
             }}>
               <img 
-                src="/logo.svg" 
+                src={`${base}logo.svg`} 
                 alt="Iconcraft Logo" 
                 style={{
                   width: '90px',
@@ -1684,7 +1690,7 @@ export default function IOSHomeScreen() {
                             cursor: 'pointer',
                             outline: 'none',
                             transition: 'all 0.2s ease',
-                            backgroundImage: `url('/${wallpaper.file}')`,
+                            backgroundImage: `url("${base}${wallpaper.file}")`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             boxShadow: selectedWallpaper === wallpaper.id ? '0 0 0 1px rgba(59, 130, 246, 0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
