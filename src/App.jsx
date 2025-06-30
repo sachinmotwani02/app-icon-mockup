@@ -231,7 +231,7 @@ function IconCraftPromoCard() {
       setCurrentIconIndex(prevIndex => (prevIndex + 1) % promoIcons.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, [promoIcons]);
+  }, []);
 
   return (
     <a
@@ -594,6 +594,8 @@ export default function IOSHomeScreen() {
   const [selectedWallpaper, setSelectedWallpaper] = useState('ios26-light');
   const [edgeHighlighting, setEdgeHighlighting] = useState(true);
 
+  const base = import.meta.env.BASE_URL;
+
   // Wallpaper options with beautiful names and suggested background colors
   const wallpaperOptions = [
     { 
@@ -664,7 +666,7 @@ export default function IOSHomeScreen() {
   const deviceOptions = {
     'black-titanium': {
       name: 'Black Titanium',
-      image: '/black-titanium-iphone16pro.png',
+      image: `${base}black-titanium-iphone16pro.png`,
       frameWidth: 629,
       frameHeight: 1304,
       screenWidth: 582,
@@ -672,15 +674,13 @@ export default function IOSHomeScreen() {
     },
     'natural-titanium': {
       name: 'Natural Titanium',
-      image: '/natural-titanium-iphone16pro.png',
+      image: `${base}natural-titanium-iphone16pro.png`,
       frameWidth: 629,
       frameHeight: 1304,
       screenWidth: 582,
       screenHeight: 1264
     }
   };
-
-  const base = import.meta.env.BASE_URL;
 
   // Define all available apps
   const allApps = [
