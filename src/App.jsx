@@ -53,6 +53,20 @@ const globalStyles = `
     white-space: nowrap;
     border-width: 0;
   }
+
+  /* High DPI optimization */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    img {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+  }
+
+  /* Force hardware acceleration for smoother animations */
+  .device-frame-container, .device-frame {
+    will-change: transform;
+    transform: translateZ(0);
+  }
 `;
 
 function createImage(url) {
@@ -260,7 +274,7 @@ function CustomAppIcon({ size, scale, customAppIcon, customAppName, edgeHighligh
                 height: '100%',
                 objectFit: 'cover',
                 opacity: edgeHighlighting ? 0.95 : 1,
-                imageRendering: 'auto',
+                imageRendering: 'crisp-edges',
                 display: 'block',
               }}
             />
@@ -378,6 +392,7 @@ export default function IOSHomeScreen() {
   const mainContentRef = useRef(null);
   const [containerDims, setContainerDims] = useState(null);
   const [frameSize, setFrameSize] = useState({ width: 0, height: 0, scale: 1 });
+  const [isResizing, setIsResizing] = useState(false);
 
   // Wallpaper options with beautiful names and suggested background colors
   const wallpaperOptions = [
@@ -502,9 +517,7 @@ export default function IOSHomeScreen() {
       newHeight = newWidth / targetAspectRatio;
     }
     
-    setContainerDims({ width: newWidth, height: newHeight });
-  
-    // Now calculate iPhone frame size based on the new container dimensions
+    // Calculate iPhone frame size based on the new container dimensions
     const device = deviceOptions[selectedDevice];
     const baseWidth = device.frameWidth;
     const baseHeight = device.frameHeight;
@@ -516,10 +529,17 @@ export default function IOSHomeScreen() {
     const scaleY = maxHeight / baseHeight;
     const scale = Math.min(scaleX, scaleY, 1);
     
-    setFrameSize({
-      width: baseWidth * scale,
-      height: baseHeight * scale,
-      scale: scale
+    // Batch state updates to prevent multiple re-renders
+    React.startTransition(() => {
+      setIsResizing(true);
+      setContainerDims({ width: newWidth, height: newHeight });
+      setFrameSize({
+        width: baseWidth * scale,
+        height: baseHeight * scale,
+        scale: scale
+      });
+      // Reset resizing flag after a brief delay
+      setTimeout(() => setIsResizing(false), 100);
     });
   }, [frameRatio, selectedDevice]);
 
@@ -529,18 +549,26 @@ export default function IOSHomeScreen() {
     
     calculateSizes();
     
-    const observer = new ResizeObserver(calculateSizes);
+    // Debounce resize observer calls to prevent excessive re-renders
+    let resizeTimeout;
+    const debouncedCalculateSizes = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(calculateSizes, 16); // 60fps throttling
+    };
+    
+    const observer = new ResizeObserver(debouncedCalculateSizes);
     if (mainEl) {
         observer.observe(mainEl);
     }
     
-    window.addEventListener('resize', calculateSizes);
+    window.addEventListener('resize', debouncedCalculateSizes);
     
     return () => {
+        clearTimeout(resizeTimeout);
         if (mainEl) {
             observer.unobserve(mainEl);
         }
-        window.removeEventListener('resize', calculateSizes);
+        window.removeEventListener('resize', debouncedCalculateSizes);
     };
   }, [calculateSizes]);
 
@@ -915,7 +943,7 @@ export default function IOSHomeScreen() {
 
       const dataUrl = await domtoimage.toPng(frameRef.current, {
         quality: 1.0,
-        pixelRatio: 4,
+        pixelRatio: window.devicePixelRatio || 4,
         bgcolor: containerStyle === 'wallpaper' ? wallpaperBgColor : 'transparent',
         style: {
           // Force font rendering to be explicit
@@ -1039,31 +1067,31 @@ export default function IOSHomeScreen() {
         <div 
           className="main-content" 
           ref={mainContentRef}
-                    style={{
+                          style={{
           marginRight: isMobile ? '0' : '340px',
-          flex: 1,
+                            flex: 1,
           height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                flexDirection: 'column',
           padding: isMobile ? '20px 0' : '40px',
           background: '#f8f9fa'
         }}>
           {isMobile && (
             <AnimatePresence mode="wait">
-              {drawerSnap < 0.5 && (
+              {drawerSnap < 0.2 && (
                 <motion.div
                   initial={{ opacity: 0, y: -20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.9 }}
                   transition={{ 
-                    duration: 0.4, 
+                    duration: 0.2, 
                     ease: [0.25, 0.46, 0.45, 0.94],
                     scale: { duration: 0.3 }
                   }}
-                  style={{ 
-                    position: 'absolute',
+                    style={{
+                      position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
@@ -1078,14 +1106,13 @@ export default function IOSHomeScreen() {
           {/* Device Frame Container with Framer Motion */}
           {containerDims && (
           <motion.div
-            layout
             ref={frameRef}
             className="device-frame-container"
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ 
               opacity: 1, 
               scale: 1, 
-              y: isMobile ? (drawerSnap - 0.13) * -400 : 0
+              y: isMobile ? (drawerSnap - 0.13) * -480 : 0
             }}
             style={{
               position: 'relative',
@@ -1098,14 +1125,16 @@ export default function IOSHomeScreen() {
               background: getContainerBackground(),
               borderRadius: '30px',
               padding: '20px',
-              transition: 'background 0.7s cubic-bezier(.4,2,.6,1)',
+              transition: isResizing 
+                ? 'none' 
+                : 'background 0.7s cubic-bezier(.4,2,.6,1), width 0.3s ease, height 0.3s ease',
               boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
               zIndex: 50
             }}
             transition={{
               type: "tween",
-              duration: 0,
-              ease: "linear"
+              duration: isResizing ? 0 : 0.2, 
+              ease: [0.25, 0.46, 0.45, 0.94]
             }}
           >
           {/* Device Frame */}
@@ -1120,7 +1149,11 @@ export default function IOSHomeScreen() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              transition: isDragging ? 'none' : 'all 0.3s ease',
+              transition: isDragging 
+                ? 'none' 
+                : isResizing 
+                  ? 'width 0.3s ease, height 0.3s ease'
+                  : 'all 0.3s ease',
               transform: `translate(${position.x}px, ${position.y}px) scale(${deviceZoom})`,
               transformOrigin: (() => {
                 switch (viewMode) {
@@ -1272,27 +1305,27 @@ export default function IOSHomeScreen() {
       </div>
       
       {!isMobile && (
-        <a 
-          href="https://iconcraft.app" 
-          target="_blank" 
-          //rel="noopener noreferrer" 
-          style={{
-            position: 'fixed',
-            bottom: '15px',
-            left: '24px',
-            zIndex: 1001,
-            fontFamily: SF_PRO_REGULAR,
-            fontSize: '16px',
-            color: 'rgba(0, 0, 0, 0.4)',
-            textDecoration: 'none',
-            transition: 'color 0.2s ease-in-out'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0, 0, 0, 0.7)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0, 0, 0, 0.4)'; }}
-        >
-          <span style={{ fontFamily: SF_PRO_BOLD }}>IconCraft</span>
-          {/* <span> - Designer-Grade app icons in seconds</span> */}
-        </a>
+      <a 
+        href="https://iconcraft.app" 
+        target="_blank" 
+        //rel="noopener noreferrer" 
+        style={{
+          position: 'fixed',
+          bottom: '15px',
+          left: '24px',
+          zIndex: 1001,
+          fontFamily: SF_PRO_REGULAR,
+          fontSize: '16px',
+          color: 'rgba(0, 0, 0, 0.4)',
+          textDecoration: 'none',
+          transition: 'color 0.2s ease-in-out'
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0, 0, 0, 0.7)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0, 0, 0, 0.4)'; }}
+      >
+        <span style={{ fontFamily: SF_PRO_BOLD }}>IconCraft</span>
+        {/* <span> - Designer-Grade app icons in seconds</span> */}
+      </a>
       )}
       
       {showCrop && (
@@ -1469,16 +1502,19 @@ function AppIcon({ src, name, nolabel = false, size = 62, scale = 1 }) {
         height={size}
         style={{
           boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-          background: '#222'
+          background: '#222',
+          overflow: 'hidden'
         }}
       >
         <img
           src={src}
           alt={name}
           style={{
-            width: '100%',
-            height: '100%',
+            width: '110%',
+            height: '110%',
             objectFit: 'cover',
+            transform: 'translate(-5%, -5%)',
+            imageRendering: 'crisp-edges'
           }}
         />
       </Squircle>
