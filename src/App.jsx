@@ -1088,7 +1088,7 @@ export default function IOSHomeScreen() {
                   transition={{ 
                     duration: 0.2, 
                     ease: [0.25, 0.46, 0.45, 0.94],
-                    scale: { duration: 0.3 }
+                    scale: { duration: 0.2 }
                   }}
                     style={{
                       position: 'absolute',
@@ -1135,7 +1135,7 @@ export default function IOSHomeScreen() {
             }}
             transition={{
               type: "tween",
-              duration: isResizing ? 0 : 0.2, 
+              duration: isResizing ? 0 : 0, 
               ease: [0.25, 0.46, 0.45, 0.94]
             }}
           >

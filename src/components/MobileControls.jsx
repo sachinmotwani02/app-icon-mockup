@@ -1,11 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import { Drawer } from 'vaul';
 import { motion, AnimatePresence } from 'framer-motion';
 import ControlsPanel from './ControlsPanel';
 
 export default function MobileControls({ snap, setSnap, ...props }) {
-  const [isDragging, setIsDragging] = useState(false);
   return (
     <Drawer.Root 
       open
@@ -13,20 +12,14 @@ export default function MobileControls({ snap, setSnap, ...props }) {
       snapPoints={[0.13, 0.6]} 
       activeSnapPoint={snap}
       setActiveSnapPoint={setSnap}
-      onDrag={(event, percentageDragged) => {
-        setIsDragging(percentageDragged > 0);
-      }}
-      onRelease={() => {
-        setIsDragging(false);
-      }}
     >
       <Drawer.Portal>
         <Drawer.Content style={{
           backgroundColor: '#ffffff',
           display: 'flex',
           flexDirection: 'column',
-          height: '96%',
           marginTop: '24px',
+          height: '96%',
           position: 'fixed',
           bottom: 0,
           left: 0,
@@ -36,7 +29,8 @@ export default function MobileControls({ snap, setSnap, ...props }) {
           borderTopRightRadius: '12px',
           outline: 'none',
           boxShadow: '0px -4px 20px rgba(0, 0, 0, 0.1)',
-          borderTop: '1px solid #e2e8f0'
+          borderTop: '1px solid #e2e8f0',
+          overflowY: snap > 0.5 ? 'auto' : 'hidden'
         }}>
           <Drawer.Title className="sr-only">Controls</Drawer.Title>
           <Drawer.Description className="sr-only">Adjust the settings for the app icon mockup.</Drawer.Description>
@@ -73,7 +67,7 @@ export default function MobileControls({ snap, setSnap, ...props }) {
             
             {/* Swipe to customise text */}
             <AnimatePresence mode="wait">
-              {snap < 0.2 && !isDragging && (
+              {snap < 0.2 && (
                 <motion.span
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -83,7 +77,7 @@ export default function MobileControls({ snap, setSnap, ...props }) {
                     ease: "easeOut"
                   }}
                   style={{
-                    fontSize: '12px',
+                    fontSize: '16px',
                     color: '#6b7280',
                     fontFamily: "'SFProRegular', -apple-system, BlinkMacSystemFont, sans-serif",
                     fontWeight: '500',
@@ -103,8 +97,6 @@ export default function MobileControls({ snap, setSnap, ...props }) {
           <motion.div 
             style={{
               padding: '8px 16px 16px 16px',
-              flex: 1,
-              overflowY: snap > 0.5 ? 'auto' : 'hidden',
             }}
             animate={{
               opacity: snap > 0.3 ? 1 : 0.7,
