@@ -20,7 +20,9 @@
     "lucide-react": "^0.511.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-easy-crop": "^5.4.2"
+    "react-easy-crop": "^5.4.2",
+    "react-use": "^17.6.0",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
