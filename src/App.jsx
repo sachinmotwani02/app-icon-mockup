@@ -533,10 +533,10 @@ export default function IOSHomeScreen() {
     React.startTransition(() => {
       setIsResizing(true);
       setContainerDims({ width: newWidth, height: newHeight });
-      setFrameSize({
-        width: baseWidth * scale,
-        height: baseHeight * scale,
-        scale: scale
+    setFrameSize({
+      width: baseWidth * scale,
+      height: baseHeight * scale,
+      scale: scale
       });
       // Reset resizing flag after a brief delay
       setTimeout(() => setIsResizing(false), 100);
@@ -1103,6 +1103,8 @@ export default function IOSHomeScreen() {
               )}
             </AnimatePresence>
           )}
+
+
           {/* Device Frame Container with Framer Motion */}
           {containerDims && (
           <motion.div
@@ -1112,7 +1114,7 @@ export default function IOSHomeScreen() {
             animate={{ 
               opacity: 1, 
               scale: 1, 
-              y: isMobile ? (drawerSnap - 0.13) * -480 : 0
+              y: isMobile ? (drawerSnap - 0.13) * -500 : 0
             }}
             style={{
               position: 'relative',

@@ -1,10 +1,11 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { Drawer } from 'vaul';
 import { motion, AnimatePresence } from 'framer-motion';
 import ControlsPanel from './ControlsPanel';
 
 export default function MobileControls({ snap, setSnap, ...props }) {
+  const [isDragging, setIsDragging] = useState(false);
   return (
     <Drawer.Root 
       open
@@ -12,6 +13,12 @@ export default function MobileControls({ snap, setSnap, ...props }) {
       snapPoints={[0.13, 0.6]} 
       activeSnapPoint={snap}
       setActiveSnapPoint={setSnap}
+      onDrag={(event, percentageDragged) => {
+        setIsDragging(percentageDragged > 0);
+      }}
+      onRelease={() => {
+        setIsDragging(false);
+      }}
     >
       <Drawer.Portal>
         <Drawer.Content style={{
@@ -37,9 +44,12 @@ export default function MobileControls({ snap, setSnap, ...props }) {
           {/* Animated Drag Handle */}
           <motion.div 
             style={{
-              padding: '16px 16px 8px 16px',
+              padding: '16px 16px 16px 16px',
               display: 'flex',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              position: 'relative'
             }}
             initial={{ opacity: 0.6 }}
             animate={{ opacity: 1 }}
@@ -60,6 +70,33 @@ export default function MobileControls({ snap, setSnap, ...props }) {
               }}
               transition={{ duration: 0.15, ease: "easeOut" }}
             />
+            
+            {/* Swipe to customise text */}
+            <AnimatePresence mode="wait">
+              {snap < 0.2 && !isDragging && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ 
+                    duration: 0.15, 
+                    ease: "easeOut"
+                  }}
+                  style={{
+                    fontSize: '12px',
+                    color: '#6b7280',
+                    fontFamily: "'SFProRegular', -apple-system, BlinkMacSystemFont, sans-serif",
+                    fontWeight: '500',
+                    letterSpacing: '0.01em',
+                    position: 'absolute',
+                    top: '100%',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Swipe to customise
+                </motion.span>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* Animated Content Container */}
