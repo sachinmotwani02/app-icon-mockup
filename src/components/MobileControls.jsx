@@ -30,7 +30,9 @@ export default function MobileControls({ snap, setSnap, ...props }) {
           outline: 'none',
           boxShadow: '0px -4px 20px rgba(0, 0, 0, 0.1)',
           borderTop: '1px solid #e2e8f0',
-          overflowY: snap > 0.5 ? 'auto' : 'hidden'
+          overflowY: snap > 0.5 ? 'auto' : 'hidden',
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-y'
         }}>
           <Drawer.Title className="sr-only">Controls</Drawer.Title>
           <Drawer.Description className="sr-only">Adjust the settings for the app icon mockup.</Drawer.Description>
