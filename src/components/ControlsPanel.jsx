@@ -209,7 +209,7 @@ export default function ControlsPanel({
           <div style={{ marginBottom: '16px' }}>
             <motion.button
               onClick={handleIconClick}
-              whileHover={{ scale: 1.02, y: -1 }}
+              // whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
               transition={{ 
                 type: "spring", 
@@ -235,11 +235,11 @@ export default function ControlsPanel({
                 outline: 'none',
                 boxShadow: '0 2px 8px rgba(3, 177, 252, 0.2)'
               }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#028bcc'}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#0299d4'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#03B1FC'}
             >
               <motion.div
-                whileHover={{ y: -2 }}
+                // whileHover={{ y: -2 }}
                 transition={{ duration: 0.2 }}
               >
                 <Upload size={16} strokeWidth={2} />
@@ -1200,12 +1200,22 @@ export default function ControlsPanel({
 
           {/* Download Button */}
           <motion.button
-            onClick={handleDownload}
-            whileHover={{ 
-              scale: 1.02, 
-              y: -2,
-              boxShadow: '0 8px 25px rgba(3, 177, 252, 0.3)'
+            onClick={() => {
+              // Track download event with Google Analytics
+              if (typeof gtag !== 'undefined') {
+                gtag('event', 'download', {
+                  event_category: 'engagement',
+                  event_label: 'mockup_download',
+                  value: 1
+                });
+              }
+              handleDownload();
             }}
+            // whileHover={{ 
+            //   scale: 1.02, 
+            //   y: -2,
+            //   boxShadow: '0 8px 25px rgba(3, 177, 252, 0.3)'
+            // }}
             whileTap={{ 
               scale: 0.98,
               y: 0
@@ -1234,11 +1244,11 @@ export default function ControlsPanel({
               outline: 'none',
               boxShadow: '0 4px 15px rgba(3, 177, 252, 0.2)'
             }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#028bcc'}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#0299d4'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#03B1FC'}
           >
             <motion.div
-              whileHover={{ y: -2 }}
+              // whileHover={{ y: -2 }}
               transition={{ duration: 0.2 }}
             >
               <Download size={16} strokeWidth={2} />
