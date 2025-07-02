@@ -39,7 +39,6 @@ export default function ControlsPanel({
   const sidebarStyle = isMobileContext ? {
     width: '100%',
     height: 'auto',
-    maxHeight: '100%',
     background: 'transparent',
     overflow: 'visible'
   } : {

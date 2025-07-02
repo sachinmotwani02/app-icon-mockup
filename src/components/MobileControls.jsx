@@ -9,7 +9,7 @@ export default function MobileControls({ snap, setSnap, ...props }) {
     <Drawer.Root 
       open
       modal={false}
-      snapPoints={[0.13, 0.6]} 
+      snapPoints={[0.13, 0.6, 0.92]} 
       activeSnapPoint={snap}
       setActiveSnapPoint={setSnap}
     >
@@ -29,10 +29,7 @@ export default function MobileControls({ snap, setSnap, ...props }) {
           borderTopRightRadius: '12px',
           outline: 'none',
           boxShadow: '0px -4px 20px rgba(0, 0, 0, 0.1)',
-          borderTop: '1px solid #e2e8f0',
-          overflowY: snap > 0.5 ? 'auto' : 'hidden',
-          WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-y'
+          borderTop: '1px solid #e2e8f0'
         }}>
           <Drawer.Title className="sr-only">Controls</Drawer.Title>
           <Drawer.Description className="sr-only">Adjust the settings for the app icon mockup.</Drawer.Description>
@@ -98,7 +95,11 @@ export default function MobileControls({ snap, setSnap, ...props }) {
           {/* Animated Content Container */}
           <motion.div 
             style={{
+              flex: 1,
               padding: '8px 16px 16px 16px',
+              overflowY: snap > 0.5 ? 'auto' : 'hidden',
+              WebkitOverflowScrolling: 'touch',
+              touchAction: 'pan-y'
             }}
             animate={{
               opacity: snap > 0.3 ? 1 : 0.7,
