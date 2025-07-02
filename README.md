@@ -1,12 +1,38 @@
-# React + Vite
+# App Icon Mockup
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Create beautiful app icon mockups for your projects. This tool allows you to generate stunning visuals for your app icons, suitable for marketing and promotional materials.
 
-Currently, two official plugins are available:
+This project is open source and serves as a showcase and a proxy for the main [IconCraft](https://iconcraft.com) project (assuming the URL, please change if incorrect). We welcome contributions from the community!
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Getting Started
 
-## Expanding the ESLint configuration
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+
+You need to have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.com/) installed on your machine.
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/your-username/app-icon-mockup.git
+    ```
+2.  Navigate to the project directory:
+    ```bash
+    cd app-icon-mockup
+    ```
+3.  Install the dependencies:
+    ```bash
+    npm install
+    ```
+
+## Development
+
+To run the app in development mode, you can use the following command. This will start a local development server.
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal) to view it in the browser. The page will reload if you make edits.

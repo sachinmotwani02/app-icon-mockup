@@ -1008,16 +1008,18 @@ export default function IOSHomeScreen() {
               justifyContent: 'center',
               marginBottom: '16px'
             }}>
-              <img 
-                src={`${base}logo.svg`} 
-                alt="Iconcraft Logo" 
-                style={{
-                  width: '90px',
-                  height: '45px',
-                  objectFit: 'contain',
-                  opacity: 0.95
-                }}
-              />
+              <a href="https://iconcraft.app" target="_blank" rel="noopener">
+                <img 
+                  src={`${base}logo.svg`} 
+                  alt="Iconcraft Logo" 
+                  style={{
+                    width: '90px',
+                    height: '45px',
+                    objectFit: 'contain',
+                    opacity: 0.95
+                  }}
+                />
+              </a>
             </div>
             <h1 style={{
               margin: '0 0 8px 0',
@@ -1310,23 +1312,28 @@ export default function IOSHomeScreen() {
       <a 
         href="https://iconcraft.app" 
         target="_blank" 
-        //rel="noopener noreferrer" 
+        rel="noopener" 
         style={{
           position: 'fixed',
           bottom: '15px',
           left: '24px',
           zIndex: 1001,
-          fontFamily: SF_PRO_REGULAR,
-          fontSize: '16px',
-          color: 'rgba(0, 0, 0, 0.4)',
-          textDecoration: 'none',
-          transition: 'color 0.2s ease-in-out'
+          textDecoration: 'none'
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(0, 0, 0, 0.7)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(0, 0, 0, 0.4)'; }}
       >
-        <span style={{ fontFamily: SF_PRO_BOLD }}>IconCraft</span>
-        {/* <span> - Designer-Grade app icons in seconds</span> */}
+        <img
+          src={`${base}logo.svg`}
+          alt="Iconcraft Logo"
+          style={{
+            width: '90px',
+            height: 'auto',
+            objectFit: 'contain',
+            opacity: 0.4,
+            transition: 'opacity 0.2s ease-in-out'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = 0.7; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = 0.4; }}
+        />
       </a>
       )}
       
