@@ -122,23 +122,59 @@ export default function ControlsPanel({
           textAlign: 'center',
           marginBottom: '12px',
             opacity: 0.9
-        }}>
-          iOS 26 App Icon Mockup Generator
-        </h1>
-        <p style={{
-          margin: '0',
-          fontSize: '14px',
-          color: '#666',
-          fontFamily: SF_PRO_REGULAR,
-          lineHeight: '1.4',
-          textAlign: 'center'
-        }}>
-        Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.              
-        </p>
-      </div>
-      )}
+                    }}>
+              iOS 26 App Icon Mockup Generator
+            </h1>
 
-      {/* Scrollable Content */}
+          {/* Product Hunt Badge - Desktop Only */}
+          {!isMobileContext && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: '16px',
+              marginTop: '12px'
+            }}>
+              <a 
+                href="https://www.producthunt.com/products/iconcraft-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-ios&#0045;26&#0045;app&#0045;icon&#0045;mockup" 
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  borderRadius: '8px',
+                  overflow: 'hidden'
+                }}
+              >
+                <img 
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=986584&theme=light&t=1751717025357" 
+                  alt="iOS 26 App Icon Mockup - Create app icon mockups featuring iOS 26 home screen | Product Hunt" 
+                  style={{
+                    width: '250px', 
+                    height: '54px',
+                    display: 'block'
+                  }} 
+                  width="250" 
+                  height="54" 
+                />
+              </a>
+            </div>
+          )}
+            
+          {!isMobileContext && (
+            <p style={{
+              margin: '0',
+              fontSize: '14px',
+              color: '#666',
+              fontFamily: SF_PRO_REGULAR,
+              lineHeight: '1.4',
+              textAlign: 'center'
+            }}>
+            Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.              
+            </p>
+          )}
+          </div>
+          )}
+  
+        {/* Scrollable Content */}
       <div style={{ padding: isMobileContext ? '0' : '0' }}>
         
         {/* App Icon Section */}
@@ -1255,6 +1291,40 @@ export default function ControlsPanel({
             </motion.div>
             Download Mockup
           </motion.button>
+          
+          {/* Product Hunt Badge - Mobile Only */}
+          {isMobileContext && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: '24px'
+            }}>
+                             <a 
+                 href="https://www.producthunt.com/products/iconcraft-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-ios&#0045;26&#0045;app&#0045;icon&#0045;mockup" 
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 style={{
+                   display: 'inline-block',
+                   borderRadius: '8px',
+                   overflow: 'hidden'
+                 }}
+               >
+                <img 
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=986584&theme=light&t=1751717025357" 
+                  alt="iOS 26 App Icon Mockup - Create app icon mockups featuring iOS 26 home screen | Product Hunt" 
+                  style={{
+                    width: '220px', 
+                    height: '47px',
+                    display: 'block',
+                    maxWidth: '100%',
+                    height: 'auto'
+                  }} 
+                  width="220" 
+                  height="47" 
+                />
+              </a>
+            </div>
+          )}
         </motion.div>
       </div>
     </motion.div>
