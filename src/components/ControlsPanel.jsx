@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Squircle } from '@squircle-js/react';
 import { Shuffle, Grip, Sun, Moon, Upload, Download, Monitor, Paintbrush, Frame, ArrowUpLeft, ArrowUpRight, ArrowDownLeft, ArrowDownRight, EyeOff, Sticker } from 'lucide-react';
 import IconCraftPromoCard from './IconCraftPromoCard';
+import ProductHuntBadge from './ProductHuntBadge';
 import { getMeshOptions, shuffleArray, rgbToHex } from '../utils/colors';
 
 
@@ -134,28 +135,7 @@ export default function ControlsPanel({
               marginBottom: '16px',
               marginTop: '12px'
             }}>
-              <a 
-                href="https://www.producthunt.com/products/iconcraft-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-ios&#0045;26&#0045;app&#0045;icon&#0045;mockup" 
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  borderRadius: '8px',
-                  overflow: 'hidden'
-                }}
-              >
-                <img 
-                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=986584&theme=light&t=1751717025357" 
-                  alt="iOS 26 App Icon Mockup - Create app icon mockups featuring iOS 26 home screen | Product Hunt" 
-                  style={{
-                    width: '250px', 
-                    height: '54px',
-                    display: 'block'
-                  }} 
-                  width="250" 
-                  height="54" 
-                />
-              </a>
+              <ProductHuntBadge isMobile={false} />
             </div>
           )}
             
@@ -1299,30 +1279,7 @@ export default function ControlsPanel({
               justifyContent: 'center',
               marginTop: '24px'
             }}>
-                             <a 
-                 href="https://www.producthunt.com/products/iconcraft-ai?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-ios&#0045;26&#0045;app&#0045;icon&#0045;mockup" 
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 style={{
-                   display: 'inline-block',
-                   borderRadius: '8px',
-                   overflow: 'hidden'
-                 }}
-               >
-                <img 
-                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=986584&theme=light&t=1751717025357" 
-                  alt="iOS 26 App Icon Mockup - Create app icon mockups featuring iOS 26 home screen | Product Hunt" 
-                  style={{
-                    width: '220px', 
-                    height: '47px',
-                    display: 'block',
-                    maxWidth: '100%',
-                    height: 'auto'
-                  }} 
-                  width="220" 
-                  height="47" 
-                />
-              </a>
+              <ProductHuntBadge isMobile={true} />
             </div>
           )}
         </motion.div>
