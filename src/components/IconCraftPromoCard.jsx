@@ -6,7 +6,14 @@ import { getSvgPath } from 'figma-squircle';
 const DashedSquircle = ({ size, cornerRadius }) => {
   const path = getSvgPath({ width: size, height: size, cornerRadius, cornerSmoothing: 1 });
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox={`0 0 ${size} ${size}`} 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
       <path d={path} stroke="rgba(255, 255, 255, 0.8)" strokeWidth="2" strokeDasharray="4 4" />
     </svg>
   );
@@ -21,6 +28,12 @@ export default function IconCraftPromoCard() {
     `${base}marketing-icons/promo-icon-3.png`
   ];
 
+  const iconDescriptions = [
+    'Colorful app icon with geometric design',
+    'Modern app icon with gradient colors', 
+    'Professional app icon with clean aesthetics'
+  ];
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIconIndex(prevIndex => (prevIndex + 1) % promoIcons.length);
@@ -33,9 +46,16 @@ export default function IconCraftPromoCard() {
       href="https://iconcraft.app"
       target="_blank"
       rel="noopener noreferrer"
+      aria-label="Visit IconCraft - Create designer-grade app icons in seconds. Opens in new window."
       style={{
         textDecoration: 'none',
         display: 'block',
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          window.open('https://iconcraft.app', '_blank', 'noopener,noreferrer');
+        }
       }}
     >
       <div
@@ -51,7 +71,10 @@ export default function IconCraftPromoCard() {
           position: 'relative',
           boxSizing: 'border-box',
           cursor: 'pointer',
-        }}>
+        }}
+        role="banner"
+        aria-label="IconCraft promotion card"
+      >
         <h4 style={{
           fontFamily: "'Inter', sans-serif",
           fontWeight: 600,
@@ -63,12 +86,17 @@ export default function IconCraftPromoCard() {
           zIndex: 1,
           textAlign: 'center',
         }}>
-          Create beautiful<br />app icons without<br />any design skills
+          Create designer-<br />grade app icons <br />in seconds
         </h4>
-        <div style={{
-          position: 'relative',
-          marginTop: '32px',
-        }}>
+        
+        <div 
+          style={{
+            position: 'relative',
+            marginTop: '32px',
+          }}
+          role="img"
+          aria-label={`Icon creation demonstration showing ${iconDescriptions[currentIconIndex]}`}
+        >
           {/* Background/border with blend mode */}
           <div style={{
             padding: '8px 15px',
@@ -78,7 +106,7 @@ export default function IconCraftPromoCard() {
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
-          }}>
+          }} aria-hidden="true">
             {/* Dashed box (left) */}
             <DashedSquircle size={48} cornerRadius={14} />
             {/* Placeholder for the icon (center) */}
@@ -99,7 +127,7 @@ export default function IconCraftPromoCard() {
               <motion.img
                 key={currentIconIndex}
                 src={promoIcons[currentIconIndex]}
-                alt="promo icon"
+                alt={iconDescriptions[currentIconIndex]}
                 initial={{ opacity: 0, y: 20, filter: 'blur(5px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, y: -20, filter: 'blur(5px)' }}
@@ -112,9 +140,19 @@ export default function IconCraftPromoCard() {
                 }}
               />
             </AnimatePresence>
+            
+            {/* Screen reader announcement for icon changes */}
+            <div 
+              aria-live="polite" 
+              aria-atomic="true"
+              className="sr-only"
+            >
+              Now showing: {iconDescriptions[currentIconIndex]}
+            </div>
           </div>
         </div>
-         <div style={{
+        
+        <div style={{
           marginTop: '18px',
           display: 'flex',
           alignItems: 'center',
@@ -128,7 +166,12 @@ export default function IconCraftPromoCard() {
           }}>
             Explore IconCraft
           </span>
-          <ArrowUpRight size={14} color="rgba(255, 255, 255, 0.9)" strokeWidth={2.5} />
+          <ArrowUpRight 
+            size={14} 
+            color="rgba(255, 255, 255, 0.9)" 
+            strokeWidth={2.5} 
+            aria-hidden="true"
+          />
         </div>
       </div>
     </a>

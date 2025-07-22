@@ -6,6 +6,128 @@ import IconCraftPromoCard from './IconCraftPromoCard';
 import ProductHuntBadge from './ProductHuntBadge';
 import { getMeshOptions, shuffleArray, rgbToHex } from '../utils/colors';
 
+// Accessible Toggle Switch Component
+const ToggleSwitch = ({ id, checked, onChange, children, ariaLabel }) => (
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  }}>
+    <label 
+      htmlFor={id}
+      style={{
+        fontSize: '14px',
+        fontWeight: '500',
+        color: '#374151',
+        fontFamily: "'SFProMedium', -apple-system, BlinkMacSystemFont, sans-serif",
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}
+    >
+      {children}
+    </label>
+    <div style={{ position: 'relative' }}>
+      <input
+        type="checkbox"
+        id={id}
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        aria-label={ariaLabel}
+        style={{
+          position: 'absolute',
+          opacity: 0,
+          width: '44px',
+          height: '24px',
+          margin: 0,
+          cursor: 'pointer',
+          zIndex: 1
+        }}
+      />
+      <div 
+        style={{
+          width: '44px',
+          height: '24px',
+          borderRadius: '12px',
+          background: checked ? '#03B1FC' : '#e2e8f0',
+          position: 'relative',
+          cursor: 'pointer',
+          transition: 'background-color 0.2s ease'
+        }}
+        aria-hidden="true"
+      >
+        <div style={{
+          width: '20px',
+          height: '20px',
+          borderRadius: '50%',
+          background: 'white',
+          position: 'absolute',
+          top: '2px',
+          left: checked ? '22px' : '2px',
+          transition: 'left 0.2s ease',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }} />
+      </div>
+    </div>
+  </div>
+);
+
+// Accessible Button Group Component
+const ButtonGroup = ({ options, selected, onSelect, ariaLabel, gridColumns = 3 }) => (
+  <fieldset style={{ border: 'none', margin: 0, padding: 0 }}>
+    <legend className="sr-only">{ariaLabel}</legend>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
+      gap: '8px'
+    }}>
+      {options.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          onClick={() => onSelect(option.id)}
+          aria-pressed={selected === option.id}
+          aria-label={option.ariaLabel || option.label}
+          style={{
+            padding: '10px 12px',
+            background: selected === option.id ? '#03B1FC' : '#f8fafc',
+            color: selected === option.id ? 'white' : '#374151',
+            border: '1px solid ' + (selected === option.id ? '#03B1FC' : '#e2e8f0'),
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontFamily: "'SFProRegular', -apple-system, BlinkMacSystemFont, sans-serif",
+            fontSize: '13px',
+            fontWeight: '500',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: option.icon ? '6px' : '0'
+          }}
+          onMouseEnter={(e) => {
+            if (selected !== option.id) {
+              e.target.style.backgroundColor = '#f1f5f9';
+            } else {
+              e.target.style.backgroundColor = '#028bcc';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (selected !== option.id) {
+              e.target.style.backgroundColor = '#f8fafc';
+            } else {
+              e.target.style.backgroundColor = '#03B1FC';
+            }
+          }}
+        >
+          {option.icon}
+          {option.label}
+        </button>
+      ))}
+    </div>
+  </fieldset>
+);
 
 export default function ControlsPanel({
   customAppName, setCustomAppName,
@@ -80,17 +202,45 @@ export default function ControlsPanel({
     }
   };
 
+  const backgroundStyleOptions = [
+    { id: 'solid', label: 'Solid', ariaLabel: 'Use solid color background' },
+    { id: 'mesh', label: 'Gradient', ariaLabel: 'Use gradient mesh background' },
+    { id: 'wallpaper', label: 'Wallpaper', ariaLabel: 'Use wallpaper background' },
+  ];
+
+  const viewModeOptions = [
+    { id: 'full', label: 'Full View', icon: <Frame size={14}/>, ariaLabel: 'Show full home screen view' },
+    { id: 'dock-right', label: 'Dock Right', icon: <ArrowDownRight size={14} />, ariaLabel: 'Focus on dock area, right side' },
+    { id: 'dock-left', label: 'Dock Left', icon: <ArrowDownLeft size={14} />, ariaLabel: 'Focus on dock area, left side' },
+    { id: 'top-right', label: 'Top Right', icon: <ArrowUpRight size={14} />, ariaLabel: 'Focus on top area, right side' },
+    { id: 'top-left', label: 'Top Left', icon: <ArrowUpLeft size={14} />, ariaLabel: 'Focus on top area, left side' }
+  ];
+
+  const deviceOptions2 = Object.entries(deviceOptions).map(([key, device]) => ({
+    id: key,
+    label: device.name,
+    ariaLabel: `Select ${device.name} device frame`
+  }));
+
+  const ratioOptions = Object.keys(ratioMap).map(ratio => ({
+    id: ratio,
+    label: ratio,
+    ariaLabel: `Set frame ratio to ${ratio}`
+  }));
+
   return (
-    <motion.div 
+    <motion.aside 
       className="sidebar" 
       style={sidebarStyle}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
+      role={isMobileContext ? "region" : "complementary"}
+      aria-label="App customization controls"
     >
       {/* Sidebar Header */}
       {!isMobileContext && (
-      <div style={{
+      <header style={{
         padding: isMobileContext ? '0 0 20px 0' : '24px 24px 20px 24px',
         borderBottom: isMobileContext ? 'none' : '1px solid #e2e8f0',
         background: 'transparent'
@@ -99,18 +249,30 @@ export default function ControlsPanel({
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          marginBottom: '16px'
+          marginBottom: '12px'
         }}>
-          <img 
-            src={`${base}logo.svg`} 
-            alt="Iconcraft Logo" 
+          <a 
+            href="/"
             style={{
-              width: '90px',
-              height: '45px',
-              objectFit: 'contain',
-              opacity: 0.95
+              display: 'block',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              transition: 'opacity 0.2s ease'
             }}
-          />
+            onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+            onMouseLeave={(e) => e.target.style.opacity = '1'}
+            aria-label="Return to homepage"
+          >
+            <img 
+              src={`${base}logo.svg`} 
+              alt="Iconcraft logo" 
+              style={{
+                width: '100px',
+                height: '50px',
+                objectFit: 'contain',
+              }}
+            />
+          </a>
         </div>
         <h1 style={{
           margin: '0 0 8px 0',
@@ -122,43 +284,43 @@ export default function ControlsPanel({
           lineHeight: '1.4',
           textAlign: 'center',
           marginBottom: '12px',
-            opacity: 0.9
-                    }}>
-              iOS 26 App Icon Mockup Generator
-            </h1>
+          opacity: 0.9
+        }}>
+          iOS 26 App Icon Mockup Generator
+        </h1>
 
-          {/* Product Hunt Badge - Desktop Only */}
-          {!isMobileContext && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginBottom: '16px',
-              marginTop: '12px'
-            }}>
-              <ProductHuntBadge isMobile={false} />
-            </div>
-          )}
-            
-          {!isMobileContext && (
-            <p style={{
-              margin: '0',
-              fontSize: '14px',
-              color: '#666',
-              fontFamily: SF_PRO_REGULAR,
-              lineHeight: '1.4',
-              textAlign: 'center'
-            }}>
-            Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.              
-            </p>
-          )}
+        {/* Product Hunt Badge - Desktop Only */}
+        {!isMobileContext && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '16px',
+            marginTop: '12px'
+          }}>
+            <ProductHuntBadge isMobile={false} />
           </div>
-          )}
-  
-        {/* Scrollable Content */}
+        )}
+          
+        {!isMobileContext && (
+          <p style={{
+            margin: '0',
+            fontSize: '14px',
+            color: '#666',
+            fontFamily: SF_PRO_REGULAR,
+            lineHeight: '1.4',
+            textAlign: 'center'
+          }}>
+            Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.              
+          </p>
+        )}
+      </header>
+      )}
+
+      {/* Scrollable Content */}
       <div style={{ padding: isMobileContext ? '0' : '0' }}>
         
         {/* App Icon Section */}
-        <motion.div 
+        <motion.section 
           variants={itemVariants}
           style={{
             padding: '20px 24px',
@@ -171,32 +333,37 @@ export default function ControlsPanel({
             gap: '8px',
             marginBottom: '16px'
           }}>
-            <Sticker size={16} color="#475569" strokeWidth={2} />
-            <h3 style={{
+            <Sticker size={16} color="#475569" strokeWidth={2} aria-hidden="true" />
+            <h2 style={{
               margin: '0',
               fontSize: '16px',
               fontWeight: '600',
               color: '#1e293b',
               fontFamily: SF_PRO_MEDIUM
-            }}>App Icon</h3>
+            }}>App Icon</h2>
           </div>
           
           {/* App Name */}
           <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151',
-              marginBottom: '8px',
-              fontFamily: SF_PRO_MEDIUM
-            }}>
+            <label 
+              htmlFor="app-name-input"
+              style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '8px',
+                fontFamily: SF_PRO_MEDIUM
+              }}
+            >
               Name
             </label>
             <input
+              id="app-name-input"
               type="text"
               value={customAppName}
               onChange={(e) => setCustomAppName(e.target.value)}
+              aria-describedby="app-name-help"
               style={{
                 width: '100%',
                 padding: '12px 14px',
@@ -219,19 +386,22 @@ export default function ControlsPanel({
                 e.target.style.borderColor = '#d1d5db';
               }}
             />
+            <div id="app-name-help" className="sr-only">
+              Enter a name for your app. Maximum 12 characters.
+            </div>
           </div>
 
           {/* App Icon */}
           <div style={{ marginBottom: '16px' }}>
             <motion.button
               onClick={handleIconClick}
-              // whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
               transition={{ 
                 type: "spring", 
                 stiffness: 400, 
                 damping: 25 
               }}
+              aria-describedby="upload-icon-help"
               style={{
                 width: '100%',
                 padding: '12px 16px',
@@ -255,18 +425,21 @@ export default function ControlsPanel({
               onMouseLeave={(e) => e.target.style.backgroundColor = '#03B1FC'}
             >
               <motion.div
-                // whileHover={{ y: -2 }}
                 transition={{ duration: 0.2 }}
               >
-                <Upload size={16} strokeWidth={2} />
+                <Upload size={16} strokeWidth={2} aria-hidden="true" />
               </motion.div>
               Upload Icon
             </motion.button>
+            <div id="upload-icon-help" className="sr-only">
+              Click to upload an app icon image. Supported formats: JPG, PNG, SVG.
+            </div>
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               accept="image/*"
+              aria-label="Select app icon file"
               style={{ display: 'none' }}
             />
           </div>
@@ -280,7 +453,7 @@ export default function ControlsPanel({
               textAlign: 'center',
               border: '1px solid #e2e8f0',
               marginBottom: '16px'
-            }}>
+            }} role="img" aria-label="App icon preview">
               <Squircle
                 cornerRadius={16}
                 cornerSmoothing={1}
@@ -293,7 +466,7 @@ export default function ControlsPanel({
               >
                 <img
                   src={customAppIcon}
-                  alt="Preview"
+                  alt="App icon preview"
                   style={{
                     width: '100%',
                     height: '100%',
@@ -312,49 +485,18 @@ export default function ControlsPanel({
           )}
 
           {/* Edge Highlighting Toggle */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-            <label style={{
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151',
-              fontFamily: SF_PRO_MEDIUM,
-              cursor: 'pointer'
-            }} onClick={() => setEdgeHighlighting(!edgeHighlighting)}>
-              Edge Highlighting
-            </label>
-            <div 
-              onClick={() => setEdgeHighlighting(!edgeHighlighting)}
-              style={{
-                width: '44px',
-                height: '24px',
-                borderRadius: '12px',
-                background: edgeHighlighting ? '#03B1FC' : '#e2e8f0',
-                position: 'relative',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s ease'
-              }}
-            >
-              <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                background: 'white',
-                position: 'absolute',
-                top: '2px',
-                left: edgeHighlighting ? '22px' : '2px',
-                transition: 'left 0.2s ease',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }} />
-            </div>
-          </div>
-        </motion.div>
+          <ToggleSwitch
+            id="edge-highlighting-toggle"
+            checked={edgeHighlighting}
+            onChange={setEdgeHighlighting}
+            ariaLabel="Toggle edge highlighting effect on app icon"
+          >
+            Edge Highlighting
+          </ToggleSwitch>
+        </motion.section>
 
         {/* Background Section */}
-        <motion.div 
+        <motion.section 
           variants={itemVariants}
           style={{
           padding: '20px 24px',
@@ -366,14 +508,14 @@ export default function ControlsPanel({
             gap: '8px',
             marginBottom: '16px'
           }}>
-            <Paintbrush size={16} color="#475569" strokeWidth={2} />
-            <h3 style={{
+            <Paintbrush size={16} color="#475569" strokeWidth={2} aria-hidden="true" />
+            <h2 style={{
               margin: '0',
               fontSize: '16px',
               fontWeight: '600',
               color: '#1e293b',
               fontFamily: SF_PRO_MEDIUM
-            }}>Background</h3>
+            }}>Background</h2>
           </div>
 
           {/* Style Selector */}
@@ -388,65 +530,30 @@ export default function ControlsPanel({
             }}>
               Style
             </label>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '8px'
-            }}>
-              {[
-                { id: 'solid', label: 'Solid' },
-                { id: 'mesh', label: 'Gradient' },
-                { id: 'wallpaper', label: 'Wallpaper' },
-              ].map(style => (
-                <button
-                  key={style.id}
-                  onClick={() => setContainerStyle(style.id)}
-                  style={{
-                    padding: '10px 12px',
-                    background: containerStyle === style.id ? '#03B1FC' : '#f8fafc',
-                    color: containerStyle === style.id ? 'white' : '#374151',
-                    border: '1px solid ' + (containerStyle === style.id ? '#03B1FC' : '#e2e8f0'),
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: SF_PRO_REGULAR,
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    transition: 'background-color 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (containerStyle !== style.id) {
-                      e.target.style.backgroundColor = '#f1f5f9';
-                    } else {
-                      e.target.style.backgroundColor = '#028bcc';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (containerStyle !== style.id) {
-                      e.target.style.backgroundColor = '#f8fafc';
-                    } else {
-                      e.target.style.backgroundColor = '#03B1FC';
-                    }
-                  }}
-                >
-                  {style.label}
-                </button>
-              ))}
-            </div>
+            <ButtonGroup
+              options={backgroundStyleOptions}
+              selected={containerStyle}
+              onSelect={setContainerStyle}
+              ariaLabel="Background style selection"
+              gridColumns={3}
+            />
           </div>
 
           {/* Color Controls */}
           <div style={{ marginBottom: '16px' }}>
             {containerStyle === 'solid' && (
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  marginBottom: '8px',
-                  fontFamily: SF_PRO_MEDIUM
-                }}>
+                <label 
+                  htmlFor="solid-color-picker"
+                  style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#374151',
+                    marginBottom: '8px',
+                    fontFamily: SF_PRO_MEDIUM
+                  }}
+                >
                   Color
                 </label>
                 <div style={{
@@ -459,9 +566,11 @@ export default function ControlsPanel({
                   border: '1px solid #e2e8f0'
                 }}>
                   <input
+                    id="solid-color-picker"
                     type="color"
                     value={solidColor}
                     onChange={e => setSolidColor(e.target.value)}
+                    aria-label="Choose solid background color"
                     style={{
                       width: '32px',
                       height: '32px',
@@ -476,6 +585,7 @@ export default function ControlsPanel({
                     type="text"
                     value={solidColor}
                     onChange={e => setSolidColor(e.target.value)}
+                    aria-label="Solid color hex value"
                     style={{
                       flex: 1,
                       padding: '8px 12px',
@@ -509,7 +619,7 @@ export default function ControlsPanel({
                   alignItems: 'center',
                   flexWrap: 'wrap',
                   marginBottom: '10px'
-                }}>
+                }} role="group" aria-label="Gradient color options">
                   {getMeshOptions(palette).map((mesh, i) => {
                     const positions = [
                       '20% 30%', '80% 70%', '60% 20%', '70% 80%'
@@ -524,6 +634,8 @@ export default function ControlsPanel({
                       <button
                         key={mesh.join('-')}
                         onClick={() => { setMeshColors(mesh); setSelectedMesh(i); }}
+                        aria-label={`Select gradient option ${i + 1}`}
+                        aria-pressed={selectedMesh === i}
                         style={{
                           width: '44px',
                           height: '32px',
@@ -544,6 +656,7 @@ export default function ControlsPanel({
                       const mesh = getMeshOptions(palette)[selectedMesh];
                       setMeshColors(shuffleArray(mesh));
                     }}
+                    aria-label="Randomize current gradient colors"
                     style={{
                       width: '32px',
                       height: '32px',
@@ -569,7 +682,7 @@ export default function ControlsPanel({
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
                     title="Randomize Gradients"
                   >
-                    <Shuffle size={16} strokeWidth={2} color="#374151" />
+                    <Shuffle size={16} strokeWidth={2} color="#374151" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -589,80 +702,89 @@ export default function ControlsPanel({
                 </label>
                 
                 {/* Wallpaper Gallery */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: '8px',
-                  marginBottom: '16px'
-                }}>
-                  {wallpaperOptions.map((wallpaper) => (
-                    <button
-                      key={wallpaper.id}
-                      onClick={() => setSelectedWallpaper(wallpaper.id)}
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        aspectRatio: '4/3',
-                        borderRadius: '8px',
-                        border: selectedWallpaper === wallpaper.id ? '2px solid #3b82f6' : '1px solid #e2e8f0',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                        outline: 'none',
-                        transition: 'all 0.2s ease',
-                        backgroundImage: `url("${base}${wallpaper.file}")`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        boxShadow: selectedWallpaper === wallpaper.id ? '0 0 0 1px rgba(59, 130, 246, 0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (selectedWallpaper !== wallpaper.id) {
-                          e.target.style.borderColor = '#9ca3af';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (selectedWallpaper !== wallpaper.id) {
-                          e.target.style.borderColor = '#e2e8f0';
-                        }
-                      }}
-                    >
-                      {/* Selected indicator */}
-                      {selectedWallpaper === wallpaper.id && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '4px',
-                          right: '4px',
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '50%',
-                          background: '#3b82f6',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                        }}>
+                <fieldset style={{ border: 'none', margin: 0, padding: 0 }}>
+                  <legend className="sr-only">Select wallpaper background</legend>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    {wallpaperOptions.map((wallpaper) => (
+                      <button
+                        key={wallpaper.id}
+                        type="button"
+                        onClick={() => setSelectedWallpaper(wallpaper.id)}
+                        aria-pressed={selectedWallpaper === wallpaper.id}
+                        aria-label={`Select ${wallpaper.name} wallpaper: ${wallpaper.description}`}
+                        style={{
+                          position: 'relative',
+                          width: '100%',
+                          aspectRatio: '4/3',
+                          borderRadius: '8px',
+                          border: selectedWallpaper === wallpaper.id ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          outline: 'none',
+                          transition: 'all 0.2s ease',
+                          backgroundImage: `url("${base}${wallpaper.file}")`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          boxShadow: selectedWallpaper === wallpaper.id ? '0 0 0 1px rgba(59, 130, 246, 0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedWallpaper !== wallpaper.id) {
+                            e.target.style.borderColor = '#9ca3af';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedWallpaper !== wallpaper.id) {
+                            e.target.style.borderColor = '#e2e8f0';
+                          }
+                        }}
+                      >
+                        {/* Selected indicator */}
+                        {selectedWallpaper === wallpaper.id && (
                           <div style={{
-                            width: '6px',
-                            height: '3px',
-                            borderLeft: '1.5px solid white',
-                            borderBottom: '1.5px solid white',
-                            transform: 'rotate(-45deg) translateY(-0.5px)'
-                          }} />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
+                            position: 'absolute',
+                            top: '4px',
+                            right: '4px',
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '50%',
+                            background: '#3b82f6',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                          }} aria-hidden="true">
+                            <div style={{
+                              width: '6px',
+                              height: '3px',
+                              borderLeft: '1.5px solid white',
+                              borderBottom: '1.5px solid white',
+                              transform: 'rotate(-45deg) translateY(-0.5px)'
+                            }} />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
 
                 {/* Wallpaper Background Color */}
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: '#374151',
-                    marginBottom: '8px',
-                    fontFamily: SF_PRO_MEDIUM
-                  }}>
+                  <label 
+                    htmlFor="wallpaper-bg-color"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#374151',
+                      marginBottom: '8px',
+                      fontFamily: SF_PRO_MEDIUM
+                    }}
+                  >
                     Background Color
                   </label>
                   <div style={{
@@ -675,9 +797,11 @@ export default function ControlsPanel({
                     border: '1px solid #e2e8f0'
                   }}>
                     <input
+                      id="wallpaper-bg-color"
                       type="color"
                       value={wallpaperBgColor}
                       onChange={e => setWallpaperBgColor(e.target.value)}
+                      aria-label="Choose wallpaper background color"
                       style={{
                         width: '32px',
                         height: '32px',
@@ -692,6 +816,7 @@ export default function ControlsPanel({
                       type="text"
                       value={wallpaperBgColor}
                       onChange={e => setWallpaperBgColor(e.target.value)}
+                      aria-label="Wallpaper background color hex value"
                       style={{
                         flex: 1,
                         padding: '8px 12px',
@@ -705,8 +830,6 @@ export default function ControlsPanel({
                     />
                   </div>
                 </div>
-
-
               </div>
             )}
           </div>
@@ -714,14 +837,17 @@ export default function ControlsPanel({
           {/* Wallpaper Blend - Only show when not using wallpaper style */}
           {containerStyle !== 'wallpaper' && (
             <div>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: '#374151',
-                marginBottom: '8px',
-                fontFamily: SF_PRO_MEDIUM
-              }}>
+              <label 
+                htmlFor="wallpaper-blend-slider"
+                style={{
+                  display: 'block',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '8px',
+                  fontFamily: SF_PRO_MEDIUM
+                }}
+              >
                 Wallpaper Blend
               </label>
             <div style={{
@@ -743,12 +869,14 @@ export default function ControlsPanel({
                   minWidth: '28px'
                 }}>0%</span>
                 <input
+                  id="wallpaper-blend-slider"
                   type="range"
                   min={0}
                   max={100}
                   step={1}
                   value={wallpaperBlend}
                   onChange={(e) => setWallpaperBlend(Number(e.target.value))}
+                  aria-valuetext={`${wallpaperBlend}% blend between black and background color`}
                   style={{
                     flex: 1,
                     height: '4px',
@@ -770,10 +898,10 @@ export default function ControlsPanel({
             </div>
           </div>
           )}
-        </motion.div>
+        </motion.section>
 
         {/* Display Section */}
-        <motion.div 
+        <motion.section 
           variants={itemVariants}
           style={{
           padding: '20px 24px',
@@ -785,14 +913,14 @@ export default function ControlsPanel({
             gap: '8px',
             marginBottom: '16px'
           }}>
-            <Monitor size={16} color="#475569" strokeWidth={2} />
-            <h3 style={{
+            <Monitor size={16} color="#475569" strokeWidth={2} aria-hidden="true" />
+            <h2 style={{
               margin: '0',
               fontSize: '16px',
               fontWeight: '600',
               color: '#1e293b',
               fontFamily: SF_PRO_MEDIUM
-            }}>Display</h3>
+            }}>Display</h2>
           </div>
 
           {/* View Mode */}
@@ -807,54 +935,13 @@ export default function ControlsPanel({
             }}>
               View Mode
             </label>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
-              gap: '8px' 
-            }}>
-              {[
-                { id: 'full', label: 'Full View', icon: <Frame size={14}/> },
-                { id: 'dock-right', label: 'Dock Right', icon: <ArrowDownRight size={14} /> },
-                { id: 'dock-left', label: 'Dock Left', icon: <ArrowDownLeft size={14} /> },
-                { id: 'top-right', label: 'Top Right', icon: <ArrowUpRight size={14} /> },
-                { id: 'top-left', label: 'Top Left', icon: <ArrowUpLeft size={14} /> }
-              ].map(mode => (
-                <button
-                  key={mode.id}
-                  onClick={() => setViewMode(mode.id)}
-                  style={{
-                    padding: '10px 8px',
-                    background: viewMode === mode.id ? '#03B1FC' : '#f8fafc',
-                    color: viewMode === mode.id ? 'white' : '#374151',
-                    border: '1px solid ' + (viewMode === mode.id ? '#03B1FC' : '#e2e8f0'),
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: SF_PRO_REGULAR,
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'background-color 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (viewMode !== mode.id) {
-                      e.target.style.backgroundColor = '#f1f5f9';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (viewMode !== mode.id) {
-                      e.target.style.backgroundColor = '#f8fafc';
-                    }
-                  }}
-                >
-                  {mode.icon}
-                  {mode.label}
-                </button>
-              ))}
-            </div>
+            <ButtonGroup
+              options={viewModeOptions}
+              selected={viewMode}
+              onSelect={setViewMode}
+              ariaLabel="View mode selection"
+              gridColumns={2}
+            />
           </div>
 
           {/* Display Controls */}
@@ -864,112 +951,34 @@ export default function ControlsPanel({
             gap: '12px'
           }}>
             {/* Focus Mode Toggle */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                {focusMode ? <Sun size={14} strokeWidth={2} color="#374151" /> : <Moon size={14} strokeWidth={2} color="#374151" />}
-                <label style={{
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  fontFamily: SF_PRO_MEDIUM,
-                  cursor: 'pointer'
-                }} onClick={() => setFocusMode(!focusMode)}>
-                  Focus Mode
-                </label>
-              </div>
-              <div 
-                onClick={() => setFocusMode(!focusMode)}
-                style={{
-                  width: '44px',
-                  height: '24px',
-                  borderRadius: '12px',
-                  background: focusMode ? '#03B1FC' : '#e2e8f0',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease'
-                }}
-              >
-                <div style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  background: 'white',
-                  position: 'absolute',
-                  top: '2px',
-                  left: focusMode ? '22px' : '2px',
-                  transition: 'left 0.2s ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                }} />
-              </div>
-            </div>
+            <ToggleSwitch
+              id="focus-mode-toggle"
+              checked={focusMode}
+              onChange={setFocusMode}
+              ariaLabel="Toggle focus mode to highlight your app icon"
+            >
+              {focusMode ? <Sun size={14} strokeWidth={2} color="#374151" aria-hidden="true" /> : <Moon size={14} strokeWidth={2} color="#374151" aria-hidden="true" />}
+              Focus Mode
+            </ToggleSwitch>
 
             {/* Hide Icons Toggle */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <EyeOff size={14} strokeWidth={2} color="#374151" />
-                <label style={{
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#374151',
-                  fontFamily: SF_PRO_MEDIUM,
-                  cursor: 'pointer'
-                }} onClick={() => setHideOtherIcons(!hideOtherIcons)}>
-                  Hide Other Icons
-                </label>
-              </div>
-              <div 
-                onClick={() => setHideOtherIcons(!hideOtherIcons)}
-                style={{
-                  width: '44px',
-                  height: '24px',
-                  borderRadius: '12px',
-                  background: hideOtherIcons ? '#03B1FC' : '#e2e8f0',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease'
-                }}
-              >
-                <div style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  background: 'white',
-                  position: 'absolute',
-                  top: '2px',
-                  left: hideOtherIcons ? '22px' : '2px',
-                  transition: 'left 0.2s ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                }} />
-              </div>
-            </div>
+            <ToggleSwitch
+              id="hide-icons-toggle"
+              checked={hideOtherIcons}
+              onChange={setHideOtherIcons}
+              ariaLabel="Hide other app icons to focus only on your app"
+            >
+              <EyeOff size={14} strokeWidth={2} color="#374151" aria-hidden="true" />
+              Hide Other Icons
+            </ToggleSwitch>
 
             {/* Randomize Button */}
             <motion.button
               onClick={randomizeAppPositions}
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.98, y: 0 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 400, 
-                damping: 25,
-                duration: 0.2 
-              }}
+              // whileHover={{ scale: 1.02, y: -1 }}
+              // whileTap={{ scale: 0.98, y: 0 }}
+
+              aria-label="Randomize positions of app icons on home screen"
               style={{
                 width: '100%',
                 padding: '12px 16px',
@@ -997,23 +1006,16 @@ export default function ControlsPanel({
               }}
             >
               <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ 
-                  duration: 0.8,
-                  ease: "easeInOut",
-                  repeat: 0
-                }}
-                key={Math.random()} // Force re-animation on click
               >
-                <Grip size={16} strokeWidth={2} />
+                <Grip size={16} strokeWidth={2} aria-hidden="true" />
               </motion.div>
               Randomise App Icons
             </motion.button>
           </div>
-        </motion.div>
+        </motion.section>
 
         {/* Device Selection Section */}
-        <motion.div 
+        <motion.section 
           variants={itemVariants}
           style={{
           padding: '20px 24px',
@@ -1025,14 +1027,14 @@ export default function ControlsPanel({
             gap: '8px',
             marginBottom: '16px'
           }}>
-            <Frame size={16} color="#475569" strokeWidth={2} />
-            <h3 style={{
+            <Frame size={16} color="#475569" strokeWidth={2} aria-hidden="true" />
+            <h2 style={{
               margin: '0',
               fontSize: '16px',
               fontWeight: '600',
               color: '#1e293b',
               fontFamily: SF_PRO_MEDIUM
-            }}>Device Frame</h3>
+            }}>Device Frame</h2>
           </div>
 
           {/* Device Options */}
@@ -1047,60 +1049,28 @@ export default function ControlsPanel({
             }}>
               iPhone 16 Pro
             </label>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '8px'
-            }}>
-              {Object.entries(deviceOptions).map(([key, device]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedDevice(key)}
-                  style={{
-                    padding: '12px 8px',
-                    background: selectedDevice === key ? '#03B1FC' : '#f8fafc',
-                    color: selectedDevice === key ? 'white' : '#374151',
-                    border: '1px solid ' + (selectedDevice === key ? '#03B1FC' : '#e2e8f0'),
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: SF_PRO_REGULAR,
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    transition: 'all 0.2s ease',
-                    outline: 'none',
-                    textAlign: 'center'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedDevice !== key) {
-                      e.target.style.backgroundColor = '#f1f5f9';
-                    } else {
-                      e.target.style.backgroundColor = '#028bcc';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedDevice !== key) {
-                      e.target.style.backgroundColor = '#f8fafc';
-                    } else {
-                      e.target.style.backgroundColor = '#03B1FC';
-                    }
-                  }}
-                >
-                  {device.name}
-                </button>
-              ))}
-            </div>
+            <ButtonGroup
+              options={deviceOptions2}
+              selected={selectedDevice}
+              onSelect={setSelectedDevice}
+              ariaLabel="Device selection"
+              gridColumns={2}
+            />
           </div>
 
           {/* Device Zoom Slider */}
           <div>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151',
-              marginBottom: '8px',
-              fontFamily: SF_PRO_MEDIUM
-            }}>
+            <label 
+              htmlFor="device-zoom-slider"
+              style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '8px',
+                fontFamily: SF_PRO_MEDIUM
+              }}
+            >
               Device Zoom
             </label>
             <div style={{
@@ -1109,12 +1079,14 @@ export default function ControlsPanel({
               gap: '10px'
             }}>
               <input
+                id="device-zoom-slider"
                 type="range"
                 min={viewMode === 'full' ? 0.8 : 1.5}
                 max={viewMode === 'full' ? 1.5 : 4}
                 step={0.01}
                 value={deviceZoom}
                 onChange={(e) => setDeviceZoom(Number(e.target.value))}
+                aria-valuetext={`${Math.round(deviceZoom * 100)}% zoom level`}
                 style={{
                   flex: 1,
                   height: '4px',
@@ -1125,19 +1097,24 @@ export default function ControlsPanel({
                   cursor: 'pointer'
                 }}
               />
-              <span style={{
-                fontSize: '12px',
-                color: '#64748b',
-                fontFamily: SF_PRO_REGULAR,
-                minWidth: '36px',
-                textAlign: 'right'
-              }}>{Math.round(deviceZoom * 100)}%</span>
+              <span 
+                style={{
+                  fontSize: '12px',
+                  color: '#64748b',
+                  fontFamily: SF_PRO_REGULAR,
+                  minWidth: '36px',
+                  textAlign: 'right'
+                }}
+                aria-live="polite"
+              >
+                {Math.round(deviceZoom * 100)}%
+              </span>
             </div>
           </div>
-        </motion.div>
+        </motion.section>
 
         {/* Export Section */}
-        <motion.div 
+        <motion.section 
           variants={itemVariants}
           style={{
           padding: '20px 24px 32px 24px'
@@ -1149,14 +1126,14 @@ export default function ControlsPanel({
             gap: '8px',
             marginBottom: '16px'
           }}>
-            <Download size={16} color="#475569" strokeWidth={2} />
-            <h3 style={{
+            <Download size={16} color="#475569" strokeWidth={2} aria-hidden="true" />
+            <h2 style={{
               margin: '0',
               fontSize: '16px',
               fontWeight: '600',
               color: '#1e293b',
               fontFamily: SF_PRO_MEDIUM
-            }}>Export</h3>
+            }}>Export</h2>
           </div>
 
           {/* Frame Ratio */}
@@ -1171,47 +1148,13 @@ export default function ControlsPanel({
             }}>
               Frame Ratio
             </label>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '6px'
-            }}>
-              {Object.keys(ratioMap).map(ratio => (
-                <button
-                  key={ratio}
-                  onClick={() => setFrameRatio(ratio)}
-                  style={{
-                    padding: '10px 6px',
-                    background: frameRatio === ratio ? '#03B1FC' : '#f8fafc',
-                    color: frameRatio === ratio ? 'white' : '#374151',
-                    border: '1px solid ' + (frameRatio === ratio ? '#03B1FC' : '#e2e8f0'),
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: SF_PRO_REGULAR,
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    transition: 'background-color 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (frameRatio !== ratio) {
-                      e.target.style.backgroundColor = '#f1f5f9';
-                    } else {
-                      e.target.style.backgroundColor = '#028bcc';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (frameRatio !== ratio) {
-                      e.target.style.backgroundColor = '#f8fafc';
-                    } else {
-                      e.target.style.backgroundColor = '#03B1FC';
-                    }
-                  }}
-                >
-                  {ratio}
-                </button>
-              ))}
-            </div>
+            <ButtonGroup
+              options={ratioOptions}
+              selected={frameRatio}
+              onSelect={setFrameRatio}
+              ariaLabel="Frame aspect ratio selection"
+              gridColumns={3}
+            />
           </div>
 
           {/* Download Button */}
@@ -1227,11 +1170,6 @@ export default function ControlsPanel({
               }
               handleDownload();
             }}
-            // whileHover={{ 
-            //   scale: 1.02, 
-            //   y: -2,
-            //   boxShadow: '0 8px 25px rgba(3, 177, 252, 0.3)'
-            // }}
             whileTap={{ 
               scale: 0.98,
               y: 0
@@ -1241,6 +1179,7 @@ export default function ControlsPanel({
               stiffness: 400, 
               damping: 25 
             }}
+            aria-label="Download your app icon mockup as PNG image"
             style={{
               width: '100%',
               padding: '14px 20px',
@@ -1264,10 +1203,9 @@ export default function ControlsPanel({
             onMouseLeave={(e) => e.target.style.backgroundColor = '#03B1FC'}
           >
             <motion.div
-              // whileHover={{ y: -2 }}
               transition={{ duration: 0.2 }}
             >
-              <Download size={16} strokeWidth={2} />
+              <Download size={16} strokeWidth={2} aria-hidden="true" />
             </motion.div>
             Download Mockup
           </motion.button>
@@ -1282,8 +1220,8 @@ export default function ControlsPanel({
               <ProductHuntBadge isMobile={true} />
             </div>
           )}
-        </motion.div>
+        </motion.section>
       </div>
-    </motion.div>
+    </motion.aside>
   )
 } 

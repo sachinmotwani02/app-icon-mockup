@@ -54,6 +54,29 @@ const globalStyles = `
     border-width: 0;
   }
 
+  /* Enhanced focus indicators for accessibility */
+  .focus-visible {
+    outline: 2px solid #007AFF;
+    outline-offset: 2px;
+  }
+
+  /* Skip link for keyboard navigation */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #007AFF;
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 1000;
+  }
+
+  .skip-link:focus {
+    top: 6px;
+  }
+
   /* High DPI optimization */
   @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
     img {
@@ -263,12 +286,28 @@ function CustomAppIcon({ size, scale, customAppIcon, customAppName, edgeHighligh
       filter: isFocused ? 'brightness(1.1)' : 'none',
       transition: 'filter 0.3s ease'
     }}>
-      <Squircle cornerRadius={16 * scale} cornerSmoothing={1} width={size} height={size} onClick={showPlaceholder ? onClick : undefined} style={squircleStyle}>
+      <Squircle 
+        cornerRadius={16 * scale} 
+        cornerSmoothing={1} 
+        width={size} 
+        height={size} 
+        onClick={showPlaceholder ? onClick : undefined} 
+        style={squircleStyle}
+        role={showPlaceholder ? "button" : "img"}
+        aria-label={showPlaceholder ? "Upload app icon" : `App icon for ${customAppName}`}
+        tabIndex={showPlaceholder ? 0 : -1}
+        onKeyDown={showPlaceholder ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        } : undefined}
+      >
         {customAppIcon ? (
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <img
               src={customAppIcon}
-              alt={customAppName}
+              alt={`App icon for ${customAppName}`}
               style={{
                 width: '100%',
                 height: '100%',
@@ -280,19 +319,19 @@ function CustomAppIcon({ size, scale, customAppIcon, customAppName, edgeHighligh
             />
             {edgeHighlighting && (
               <>
-                <span style={{ ...borderSpanStyle, background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, transparent 60%)', mixBlendMode: 'soft-light' }} />
-                <span style={{ ...borderSpanStyle, background: 'linear-gradient(135deg, transparent 60%, rgba(255, 255, 255, 0.3) 100%)', mixBlendMode: 'soft-light' }} />
-                <span style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', boxShadow: 'inset 0px 1px 2px rgba(255,255,255,0.1)' }} />
+                <span style={{ ...borderSpanStyle, background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, transparent 60%)', mixBlendMode: 'soft-light' }} aria-hidden="true" />
+                <span style={{ ...borderSpanStyle, background: 'linear-gradient(135deg, transparent 60%, rgba(255, 255, 255, 0.3) 100%)', mixBlendMode: 'soft-light' }} aria-hidden="true" />
+                <span style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', boxShadow: 'inset 0px 1px 2px rgba(255,255,255,0.1)' }} aria-hidden="true" />
               </>
             )}
           </div>
         ) : (
           <>
-            <div style={{ width: `${24 * scale}px`, height: `${24 * scale}px`, position: 'relative' }}>
+            <div style={{ width: `${24 * scale}px`, height: `${24 * scale}px`, position: 'relative' }} aria-hidden="true">
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: `${16 * scale}px`, height: `${2 * scale}px`, background: 'white' }}></div>
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: `${2 * scale}px`, height: `${16 * scale}px`, background: 'white' }}></div>
             </div>
-            <span style={{ color: 'white', fontSize: `${11 * scale}px`, marginTop: `${2 * scale}px`, fontWeight: '500' }}>TAP</span>
+            <span style={{ color: 'white', fontSize: `${11 * scale}px`, marginTop: `${2 * scale}px`, fontWeight: '500' }} aria-hidden="true">TAP</span>
           </>
         )}
       </Squircle>
@@ -399,7 +438,7 @@ export default function IOSHomeScreen() {
     { 
       id: 'ios26-light', 
       name: 'iOS 26', 
-      file: 'ios26-light.jpg', 
+      file: 'ios26-light.webp', 
       description: 'Official iOS 26 wallpaper',
       backgroundSize: 'cover',
       backgroundPosition: 'center center',
@@ -408,7 +447,7 @@ export default function IOSHomeScreen() {
     { 
       id: 'aurora-mountains', 
       name: 'Aurora Mountains', 
-      file: 'aurora-mountains.jpg', 
+      file: 'aurora-mountains.webp', 
       description: 'Majestic mountain aurora',
       backgroundSize: 'cover',
       backgroundPosition: 'center 30%',
@@ -417,7 +456,7 @@ export default function IOSHomeScreen() {
     { 
       id: 'cosmic-nebula', 
       name: 'Cosmic Nebula', 
-      file: 'cosmic-nebula.jpg', 
+      file: 'cosmic-nebula.webp', 
       description: 'Deep space colors',
       backgroundSize: 'cover',
       backgroundPosition: 'center center',
@@ -426,7 +465,7 @@ export default function IOSHomeScreen() {
     { 
       id: 'ocean-waves', 
       name: 'Ocean Waves', 
-      file: 'ocean-waves.jpg', 
+      file: 'ocean-waves.webp', 
       description: 'Tranquil blue waters',
       backgroundSize: 'cover',
       backgroundPosition: 'center 40%',
@@ -435,7 +474,7 @@ export default function IOSHomeScreen() {
     { 
       id: 'sunset-gradient', 
       name: 'Sunset Gradient', 
-      file: 'sunset-gradient.jpg', 
+      file: 'sunset-gradient.webp', 
       description: 'Warm evening tones',
       backgroundSize: 'cover',
       backgroundPosition: 'center center',
@@ -444,7 +483,7 @@ export default function IOSHomeScreen() {
     { 
       id: 'forest-depths', 
       name: 'Forest Depths', 
-      file: 'forest-depths.jpg', 
+      file: 'forest-depths.webp', 
       description: 'Emerald forest canopy',
       backgroundSize: 'cover',
       backgroundPosition: 'center 20%',
@@ -1051,35 +1090,43 @@ export default function IOSHomeScreen() {
                         return (
     <>
       <style>{globalStyles}</style>
+      {/* Skip link for keyboard navigation */}
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      
       <div className="app-container" style={{
-                          display: 'flex',
+        display: 'flex',
         height: '100vh',
         background: '#f8f9fa',
-                            overflow: 'hidden',
+        overflow: 'hidden',
         flexDirection: isMobile ? 'column' : 'row'
       }}>
         {/* Right Sidebar or Mobile Drawer */}
         {isMobile ? (
           <MobileControls {...controlProps} snap={drawerSnap} setSnap={setDrawerSnap} />
         ) : (
-          <ControlsPanel {...controlProps} />
+          <aside role="complementary" aria-label="App customization controls">
+            <ControlsPanel {...controlProps} />
+          </aside>
         )}
 
         {/* Main Content Area */}
-        <div 
+        <main 
+          id="main-content"
           className="main-content" 
           ref={mainContentRef}
-                          style={{
-          marginRight: isMobile ? '0' : '340px',
-                            flex: 1,
-          height: '100vh',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                flexDirection: 'column',
-          padding: isMobile ? '20px 0' : '40px',
-          background: '#f8f9fa'
-        }}>
+          role="main"
+          aria-label="App icon mockup preview"
+          style={{
+            marginRight: isMobile ? '0' : '340px',
+            flex: 1,
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            padding: isMobile ? '20px 0' : '40px',
+            background: '#f8f9fa'
+          }}>
           {isMobile && (
             <AnimatePresence mode="wait">
               {drawerSnap < 0.2 && (
@@ -1092,8 +1139,8 @@ export default function IOSHomeScreen() {
                     ease: [0.25, 0.46, 0.45, 0.94],
                     scale: { duration: 0.2 }
                   }}
-                    style={{
-                      position: 'absolute',
+                  style={{
+                    position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
@@ -1118,6 +1165,8 @@ export default function IOSHomeScreen() {
               scale: 1, 
               y: isMobile ? (drawerSnap - 0.13) * -500 : 0
             }}
+            role="img"
+            aria-label={`iPhone mockup displaying ${customAppName} app icon on iOS home screen`}
             style={{
               position: 'relative',
               width: containerDims.width,
@@ -1146,6 +1195,24 @@ export default function IOSHomeScreen() {
             onMouseDown={handleDragStart}
             onTouchStart={handleDragStart}
             className="device-frame"
+            role="button"
+            aria-label="Drag to reposition iPhone mockup"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                setPosition(prev => ({ ...prev, x: prev.x - 10 }));
+              } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                setPosition(prev => ({ ...prev, x: prev.x + 10 }));
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setPosition(prev => ({ ...prev, y: prev.y - 10 }));
+              } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setPosition(prev => ({ ...prev, y: prev.y + 10 }));
+              }
+            }}
             style={{
               position: 'relative',
               width: `${frameSize.width}px`,
@@ -1177,24 +1244,29 @@ export default function IOSHomeScreen() {
             }}
           >
             {/* PNG Device Frame Background */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundImage: `url("${deviceOptions[selectedDevice].image}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              pointerEvents: 'none',
-              zIndex: 2
-            }}></div>
+            <div 
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundImage: `url("${deviceOptions[selectedDevice].image}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                pointerEvents: 'none',
+                zIndex: 2
+              }}
+              aria-hidden="true"
+            ></div>
             
             {/* Screen Content Container */}
             <div 
               key={`screen-${selectedWallpaper}-${containerStyle}`}
               className="device-screen" 
+              role="img"
+              aria-label="iOS home screen with app icons"
               style={{
                 width: `${deviceOptions[selectedDevice].screenWidth * frameSize.scale}px`,
                 height: `${deviceOptions[selectedDevice].screenHeight * frameSize.scale}px`,
@@ -1222,29 +1294,36 @@ export default function IOSHomeScreen() {
 
               {/* Focus Mode Overlay */}
               {focusMode && (
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: 'rgba(0, 0, 0, 0.75)',
-                  zIndex: 15,
-                  pointerEvents: 'none'
-                }} />
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.75)',
+                    zIndex: 15,
+                    pointerEvents: 'none'
+                  }} 
+                  aria-hidden="true"
+                />
               )}
 
               {/* Status Bar */}
-              <div style={{
-                position: 'absolute',
-                top: `${24 * getUIScale() * frameSize.scale}px`,
-                left: '0',
-                right: '0',
-                height: `${22 * getUIScale() * frameSize.scale}px`,
-                padding: '0',
-                zIndex: 10
-              }}>
-                <svg width={deviceOptions[selectedDevice].screenWidth * frameSize.scale} height={22 * getUIScale() * frameSize.scale} viewBox={`0 0 ${deviceOptions[selectedDevice].screenWidth} 22`} fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: `${24 * getUIScale() * frameSize.scale}px`,
+                  left: '0',
+                  right: '0',
+                  height: `${22 * getUIScale() * frameSize.scale}px`,
+                  padding: '0',
+                  zIndex: 10
+                }}
+                role="img"
+                aria-label="iOS status bar showing 9:41 AM, signal strength, and battery level"
+              >
+                <svg width={deviceOptions[selectedDevice].screenWidth * frameSize.scale} height={22 * getUIScale() * frameSize.scale} viewBox={`0 0 ${deviceOptions[selectedDevice].screenWidth} 22`} fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <text x={61 * getUIScale()} y="17" fill="white" style={{ fontFamily: SF_PRO_MEDIUM, fontSize: `${17 * getUIScale()}px`, fontWeight: '600' }}>9:41</text>
                   <g transform={`scale(${getUIScale()})`}>
                     <path fillRule="evenodd" clipRule="evenodd" d="M307.865 6.03301C307.865 5.39996 307.388 4.88678 306.798 4.88678H305.732C305.143 4.88678 304.665 5.39996 304.665 6.03301V15.967C304.665 16.6 305.143 17.1132 305.732 17.1132H306.798C307.388 17.1132 307.865 16.6 307.865 15.967V6.03301ZM300.431 7.33206H301.498C302.087 7.33206 302.564 7.85756 302.564 8.5058V15.9395C302.564 16.5877 302.087 17.1132 301.498 17.1132H300.431C299.842 17.1132 299.364 16.5877 299.364 15.9395V8.5058C299.364 7.85756 299.842 7.33206 300.431 7.33206ZM296.099 9.98111H295.033C294.444 9.98111 293.966 10.5133 293.966 11.1698V15.9245C293.966 16.581 294.444 17.1132 295.033 17.1132H296.099C296.688 17.1132 297.166 16.581 297.166 15.9245V11.1698C297.166 10.5133 296.688 9.98111 296.099 9.98111ZM290.798 12.4264H289.732C289.143 12.4264 288.665 12.951 288.665 13.5981V15.9415C288.665 16.5886 289.143 17.1132 289.732 17.1132H290.798C291.388 17.1132 291.865 16.5886 291.865 15.9415V13.5981C291.865 12.951 291.388 12.4264 290.798 12.4264Z" fill="white"/>
@@ -1257,16 +1336,20 @@ export default function IOSHomeScreen() {
               </div>
 
               {/* Home Screen Content */}
-              <div style={{
-                position: 'absolute',
-                top: `${54 * getUIScale() * frameSize.scale}px`,
-                left: '0',
-                right: '0',
-                bottom: '0',
-                padding: `0 ${24 * getUIScale() * frameSize.scale}px`,
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: `${54 * getUIScale() * frameSize.scale}px`,
+                  left: '0',
+                  right: '0',
+                  bottom: '0',
+                  padding: `0 ${24 * getUIScale() * frameSize.scale}px`,
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+                role="group"
+                aria-label="iOS home screen app icons"
+              >
                 {renderAppGrid()}
 
                 {/* Spacer to push dock to bottom */}
@@ -1275,24 +1358,38 @@ export default function IOSHomeScreen() {
                 {/* Bottom Section with Dock and Dots */}
                 <div>
                   {/* Page Dots (Pagination UI) */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    gap: `${6 * getUIScale() * frameSize.scale}px`,
-                    marginBottom: `${18 * getUIScale() * frameSize.scale}px`
-                  }}>
-                    <div style={{
-                      width: `${5 * getUIScale() * frameSize.scale}px`,
-                      height: `${5 * getUIScale() * frameSize.scale}px`,
-                      borderRadius: '50%',
-                      background: 'white'
-                    }}></div>
-                    <div style={{
-                      width: `${5 * getUIScale() * frameSize.scale}px`,
-                      height: `${5 * getUIScale() * frameSize.scale}px`,
-                      borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.3)'
-                    }}></div>
+                  <div 
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: `${6 * getUIScale() * frameSize.scale}px`,
+                      marginBottom: `${18 * getUIScale() * frameSize.scale}px`
+                    }}
+                    role="tablist"
+                    aria-label="Home screen pages"
+                  >
+                    <div 
+                      style={{
+                        width: `${5 * getUIScale() * frameSize.scale}px`,
+                        height: `${5 * getUIScale() * frameSize.scale}px`,
+                        borderRadius: '50%',
+                        background: 'white'
+                      }}
+                      role="tab"
+                      aria-selected="true"
+                      aria-label="Page 1 of 2, currently selected"
+                    ></div>
+                    <div 
+                      style={{
+                        width: `${5 * getUIScale() * frameSize.scale}px`,
+                        height: `${5 * getUIScale() * frameSize.scale}px`,
+                        borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.3)'
+                      }}
+                      role="tab"
+                      aria-selected="false"
+                      aria-label="Page 2 of 2"
+                    ></div>
                   </div>
                   {renderDock()}
                   {/* Extra margin after dock */}
@@ -1300,12 +1397,10 @@ export default function IOSHomeScreen() {
                 </div>
               </div>
             </div>
-            
-
           </div>
           </motion.div>
         )}
-        </div>
+        </main>
       </div>
       
       {!isMobile && (
@@ -1313,6 +1408,7 @@ export default function IOSHomeScreen() {
         href="https://iconcraft.app" 
         target="_blank" 
         rel="noopener" 
+        aria-label="Visit Iconcraft website"
         style={{
           position: 'fixed',
           bottom: '15px',
@@ -1323,7 +1419,7 @@ export default function IOSHomeScreen() {
       >
         <img
           src={`${base}logo.svg`}
-          alt="Iconcraft Logo"
+          alt="Iconcraft logo"
           style={{
             width: '90px',
             height: 'auto',
@@ -1338,19 +1434,25 @@ export default function IOSHomeScreen() {
       )}
       
       {showCrop && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.9)',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.9)',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="crop-modal-title"
+          aria-describedby="crop-modal-description"
+        >
           <div style={{
             width: '90%',
             maxWidth: '500px',
@@ -1361,13 +1463,25 @@ export default function IOSHomeScreen() {
             position: 'relative',
             boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
           }}>
-            <h3 style={{
-              color: 'white',
-              margin: '0 0 20px 0',
-              fontSize: '20px',
-              fontWeight: '600',
-              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-            }}>Crop App Icon</h3>
+            <h3 
+              id="crop-modal-title"
+              style={{
+                color: 'white',
+                margin: '0 0 20px 0',
+                fontSize: '20px',
+                fontWeight: '600',
+                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
+              }}
+            >
+              Crop App Icon
+            </h3>
+            
+            <div 
+              id="crop-modal-description" 
+              className="sr-only"
+            >
+              Use the cropping interface to adjust your app icon. You can drag to reposition, zoom in or out, and use the zoom slider for precise control.
+            </div>
             
             <div style={{
               width: '100%',
@@ -1405,18 +1519,25 @@ export default function IOSHomeScreen() {
               marginTop: '20px',
               padding: '0 10px'
             }}>
-              <span style={{
-                color: 'white',
-                fontSize: '14px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-              }}>Zoom</span>
+              <label 
+                htmlFor="zoom-slider"
+                style={{
+                  color: 'white',
+                  fontSize: '14px',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
+                }}
+              >
+                Zoom
+              </label>
               <input
+                id="zoom-slider"
                 type="range"
                 min={1}
                 max={3}
                 step={0.01}
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
+                aria-valuetext={`${Math.round(zoom * 100)}% zoom`}
                 style={{
                   flex: 1,
                   height: '4px',
@@ -1426,13 +1547,18 @@ export default function IOSHomeScreen() {
                   outline: 'none'
                 }}
               />
-              <span style={{
-                color: 'white',
-                fontSize: '14px',
-                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-                minWidth: '40px',
-                textAlign: 'right'
-              }}>{Math.round(zoom * 100)}%</span>
+              <span 
+                style={{
+                  color: 'white',
+                  fontSize: '14px',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                  minWidth: '40px',
+                  textAlign: 'right'
+                }}
+                aria-live="polite"
+              >
+                {Math.round(zoom * 100)}%
+              </span>
             </div>
 
             {/* Action Buttons */}
@@ -1444,6 +1570,7 @@ export default function IOSHomeScreen() {
             }}>
               <button
                 onClick={() => setShowCrop(false)}
+                aria-label="Cancel cropping and return to editor"
                 style={{
                   padding: '12px 24px',
                   background: 'rgba(255,255,255,0.1)',
@@ -1464,6 +1591,7 @@ export default function IOSHomeScreen() {
               </button>
               <button
                 onClick={handleCropSave}
+                aria-label="Save cropped icon and apply to mockup"
                 style={{
                   padding: '12px 24px',
                   background: '#03B1FC',
@@ -1485,13 +1613,17 @@ export default function IOSHomeScreen() {
             </div>
 
             {/* Instructions */}
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'center',
-              color: 'rgba(255,255,255,0.6)',
-              fontSize: '13px',
-              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
-            }}>
+            <div 
+              style={{
+                marginTop: '20px',
+                textAlign: 'center',
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '13px',
+                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
+              }}
+              role="note"
+              aria-label="Cropping instructions"
+            >
               Drag to position • Pinch to zoom • Use slider for precise zoom
             </div>
           </div>
@@ -1514,10 +1646,12 @@ function AppIcon({ src, name, nolabel = false, size = 62, scale = 1 }) {
           background: '#222',
           overflow: 'hidden'
         }}
+        role="img"
+        aria-label={`${name} app icon`}
       >
         <img
           src={src}
-          alt={name}
+          alt={`${name} app`}
           style={{
             width: '110%',
             height: '110%',
