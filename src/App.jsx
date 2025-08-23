@@ -974,24 +974,47 @@ export default function IOSHomeScreen() {
     if (!frameRef.current) return;
 
     try {
+      // Store original border radius
+      const originalBorderRadius = frameRef.current.style.borderRadius;
+      
+      // Temporarily remove border radius for clean download
+      frameRef.current.style.borderRadius = '0px';
+      
       // Ensure all fonts are loaded before capture
       await document.fonts.ready;
       
       // Add a small delay to ensure everything is fully rendered
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Get the appropriate background color for download
+      const getDownloadBgColor = () => {
+        if (containerStyle === 'wallpaper') {
+          return wallpaperBgColor;
+        } else if (containerStyle === 'solid') {
+          return solidColor;
+        } else if (containerStyle === 'mesh') {
+          // For mesh, use the first mesh color as fallback
+          return meshColors[0] || '#ededed';
+        }
+        return 'transparent';
+      };
 
       const dataUrl = await domtoimage.toPng(frameRef.current, {
         quality: 1.0,
         pixelRatio: window.devicePixelRatio || 4,
-        bgcolor: containerStyle === 'wallpaper' ? wallpaperBgColor : 'transparent',
+        bgcolor: getDownloadBgColor(),
         style: {
           // Force font rendering to be explicit
           fontDisplay: 'block',
           fontSmooth: 'always',
           WebkitFontSmoothing: 'antialiased',
-          MozOsxFontSmoothing: 'grayscale'
+          MozOsxFontSmoothing: 'grayscale',
+          borderRadius: '0px' // Ensure no border radius in captured image
         }
       });
+
+      // Restore original border radius
+      frameRef.current.style.borderRadius = originalBorderRadius;
 
       const link = document.createElement('a');
       const safeAppName = (customAppName || 'app-icon')
@@ -1004,6 +1027,10 @@ export default function IOSHomeScreen() {
       link.href = dataUrl;
       link.click();
     } catch (error) {
+      // Restore border radius in case of error
+      if (frameRef.current) {
+        frameRef.current.style.borderRadius = '30px';
+      }
       console.error('Download failed:', error);
       alert('Download failed. Please try again.');
     }
