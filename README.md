@@ -1,5 +1,9 @@
 # iOS 26 App Icon Mockup Generator
 
+
+https://github.com/user-attachments/assets/eb7a9c7f-7d9d-48a4-9a53-69e5d970575e
+
+
 Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.
 
 ## Features
@@ -8,6 +12,13 @@ Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro wit
 - 🎨 Multiple views and background options
 - 👀 Real-time preview
 - 📸 High-resolution export
+
+## Mobile Responsiveness
+
+
+https://github.com/user-attachments/assets/c46415ae-7383-4d03-8835-3e5ab16769cd
+
+
 
 ## Getting Started
 
