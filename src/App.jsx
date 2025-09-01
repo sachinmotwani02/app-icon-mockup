@@ -501,7 +501,7 @@ export default function IOSHomeScreen() {
 
   // Set default apps for initial view
   const defaultGridApps = [
-    { name: "Calender", src: `${base}icons/calender.png` },
+    { name: "Calendar", src: `${base}icons/calender.png` },
     { name: "Clock", src: `${base}icons/clock.png` },
     { name: "Facetime", src: `${base}icons/facetime.png` },
     { name: "App Store", src: `${base}icons/appstore.png` },
@@ -666,6 +666,28 @@ export default function IOSHomeScreen() {
       setWallpaperBgColor(currentWallpaper.suggestedBgColor);
     }
   }, [selectedWallpaper]);
+
+  // Check for image URL parameter on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const imageUrl = urlParams.get('imageUrl');
+    
+    if (imageUrl) {
+      try {
+        // Decode the URL in case it's encoded
+        const decodedUrl = decodeURIComponent(imageUrl);
+        // Set the raw icon and show crop modal directly
+        setRawIcon(decodedUrl);
+        setShowCrop(true);
+        
+        // Optionally clear the URL parameter after processing
+        const newUrl = window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
+      } catch (error) {
+        console.error('Error processing image URL parameter:', error);
+      }
+    }
+  }, []);
 
   // Get container background based on style and extracted colors
   const getContainerBackground = () => {
