@@ -216,11 +216,22 @@ export default function ControlsPanel({
     { id: 'top-left', label: 'Top Left', icon: <ArrowUpLeft size={14} />, ariaLabel: 'Focus on top area, left side' }
   ];
 
-  const deviceOptions2 = Object.entries(deviceOptions).map(([key, device]) => ({
-    id: key,
-    label: device.name,
-    ariaLabel: `Select ${device.name} device frame`
-  }));
+  // Separate iPhone 17 Pro and iPhone 16 Pro devices
+  const iphone17ProDevices = Object.entries(deviceOptions)
+    .filter(([key]) => ['cosmic-orange', 'silver', 'deep-blue'].includes(key))
+    .map(([key, device]) => ({
+      id: key,
+      label: device.name,
+      ariaLabel: `Select ${device.name} device frame`
+    }));
+
+  const iphone16ProDevices = Object.entries(deviceOptions)
+    .filter(([key]) => ['black-titanium', 'natural-titanium'].includes(key))
+    .map(([key, device]) => ({
+      id: key,
+      label: device.name,
+      ariaLabel: `Select ${device.name} device frame`
+    }));
 
   const ratioOptions = Object.keys(ratioMap).map(ratio => ({
     id: ratio,
@@ -1037,7 +1048,28 @@ export default function ControlsPanel({
             }}>Device Frame</h2>
           </div>
 
-          {/* Device Options */}
+          {/* iPhone 17 Pro Options */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#374151',
+              marginBottom: '8px',
+              fontFamily: SF_PRO_MEDIUM
+            }}>
+              iPhone 17 Pro
+            </label>
+            <ButtonGroup
+              options={iphone17ProDevices}
+              selected={selectedDevice}
+              onSelect={setSelectedDevice}
+              ariaLabel="iPhone 17 Pro device selection"
+              gridColumns={2}
+            />
+          </div>
+
+          {/* iPhone 16 Pro Options */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{
               display: 'block',
@@ -1050,10 +1082,10 @@ export default function ControlsPanel({
               iPhone 16 Pro
             </label>
             <ButtonGroup
-              options={deviceOptions2}
+              options={iphone16ProDevices}
               selected={selectedDevice}
               onSelect={setSelectedDevice}
-              ariaLabel="Device selection"
+              ariaLabel="iPhone 16 Pro device selection"
               gridColumns={2}
             />
           </div>

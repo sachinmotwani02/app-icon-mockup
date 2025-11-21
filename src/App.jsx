@@ -359,6 +359,30 @@ const base = import.meta.env.BASE_URL;
 
 // Device frame options
 const deviceOptions = {
+  'cosmic-orange': {
+    name: 'Cosmic Orange',
+    image: `${base}CosmicOrange.png`,
+    frameWidth: 629,
+    frameHeight: 1304,
+    screenWidth: 582,
+    screenHeight: 1264
+  },
+  'silver': {
+    name: 'Silver',
+    image: `${base}Silver.png`,
+    frameWidth: 629,
+    frameHeight: 1304,
+    screenWidth: 582,
+    screenHeight: 1264
+  },
+  'deep-blue': {
+    name: 'Deep Blue',
+    image: `${base}DeepBlue.png`,
+    frameWidth: 629,
+    frameHeight: 1304,
+    screenWidth: 582,
+    screenHeight: 1264
+  },
   'black-titanium': {
     name: 'Black Titanium',
     image: `${base}black-titanium-iphone16pro.png`,
@@ -422,7 +446,7 @@ export default function IOSHomeScreen() {
   const [hideOtherIcons, setHideOtherIcons] = useState(false);
   const [deviceZoom, setDeviceZoom] = useState(0.9);
   const [randomizeKey, setRandomizeKey] = useState(0);
-  const [selectedDevice, setSelectedDevice] = useState('black-titanium');
+  const [selectedDevice, setSelectedDevice] = useState('cosmic-orange');
   const [selectedWallpaper, setSelectedWallpaper] = useState('ios26-light');
   const [edgeHighlighting, setEdgeHighlighting] = useState(true);
   const [drawerSnap, setDrawerSnap] = useState(0.13);
