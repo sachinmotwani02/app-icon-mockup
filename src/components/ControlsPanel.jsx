@@ -321,7 +321,7 @@ export default function ControlsPanel({
             lineHeight: '1.4',
             textAlign: 'center'
           }}>
-            Create beautiful app icon mockups, showcasing your app icon on iphone 16 pro with ios 26 home screen and wallpapers.              
+            Create beautiful app icon mockups, showcasing your app icon on iphone 17 pro with ios 26 home screen and wallpapers.              
           </p>
         )}
       </header>
