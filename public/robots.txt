@@ -1,0 +1,37 @@
+# Robots.txt for App Icon Mockup Generator
+# https://www.iconcraft.app/app-icon-mockup
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://www.iconcraft.app/app-icon-mockup/sitemap.xml
+
+# Allow all search engine crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Block unnecessary files from being crawled
+Disallow: /assets/
+Disallow: /*.js$
+Disallow: /*.css$
+
+# Allow important resources for rendering
+Allow: /app-icon-mockup-OG.png
+Allow: /wallpapers/
+Allow: /icons/

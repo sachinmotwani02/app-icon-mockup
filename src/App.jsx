@@ -1165,7 +1165,18 @@ export default function IOSHomeScreen() {
       <style>{globalStyles}</style>
       {/* Skip link for keyboard navigation */}
       <a href="#main-content" className="skip-link">Skip to main content</a>
-      
+
+      {/* SEO: Screen reader accessible semantic content */}
+      <header className="sr-only">
+        <h1>App Icon Mockup Generator - Free iOS App Icon Preview Tool</h1>
+        <p>
+          Create stunning app icon mockups instantly with our free online generator.
+          Preview your iOS app icon on iPhone 17 Pro with iOS 26 home screens,
+          custom wallpapers, and professional device frames. Perfect for App Store
+          screenshots, marketing materials, and design presentations. No signup required.
+        </p>
+      </header>
+
       <div className="app-container" style={{
         display: 'flex',
         height: '100vh',
@@ -1686,7 +1697,7 @@ export default function IOSHomeScreen() {
             </div>
 
             {/* Instructions */}
-            <div 
+            <div
               style={{
                 marginTop: '20px',
                 textAlign: 'center',
@@ -1702,6 +1713,36 @@ export default function IOSHomeScreen() {
           </div>
         </div>
       )}
+
+      {/* SEO: Footer with semantic content for search engines */}
+      <footer className="sr-only">
+        <nav aria-label="Related tools and resources">
+          <h2>App Icon Mockup Generator Features</h2>
+          <ul>
+            <li>Free app icon mockup generator with no signup required</li>
+            <li>iPhone 17 Pro device frames for realistic iOS mockups</li>
+            <li>iOS 26 home screen layouts and wallpapers</li>
+            <li>Multiple view modes: full-screen, dock-left, dock-right</li>
+            <li>High-resolution export for App Store and marketing</li>
+            <li>Drag and drop app icon upload</li>
+            <li>Custom wallpaper backgrounds</li>
+            <li>Professional iOS app icon preview tool</li>
+          </ul>
+        </nav>
+        <section aria-label="About this tool">
+          <h2>About App Icon Mockup Generator</h2>
+          <p>
+            The App Icon Mockup Generator is a free online tool designed for app developers,
+            designers, and marketers who need to create professional iOS app icon previews.
+            Generate beautiful app icon mockups instantly without any design skills.
+            Preview how your app icon will look on the iPhone 17 Pro home screen with
+            iOS 26 layouts, custom wallpapers, and realistic device frames.
+            Perfect for App Store screenshots, marketing materials, social media,
+            and portfolio presentations.
+          </p>
+        </section>
+        <p>&copy; {new Date().getFullYear()} IconCraft. Free App Icon Mockup Generator.</p>
+      </footer>
     </>
   );
 }
