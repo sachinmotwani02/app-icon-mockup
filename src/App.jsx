@@ -282,8 +282,7 @@ function CustomAppIcon({ size, scale, customAppIcon, customAppName, edgeHighligh
       flexDirection: 'column', 
       alignItems: 'center', 
       position: 'relative', 
-      zIndex: isFocused ? 25 : 1, 
-      filter: isFocused ? 'brightness(1.1)' : 'none',
+      zIndex: isFocused ? 25 : 1,
       transition: 'filter 0.3s ease'
     }}>
       <Squircle 
@@ -346,7 +345,7 @@ function CustomAppIcon({ size, scale, customAppIcon, customAppName, edgeHighligh
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
-          textShadow: isFocused ? '0 0 8px rgba(255,255,255,0.3)' : 'none'
+          textShadow: 'none'
         }}>
           {customAppName}
         </span>
