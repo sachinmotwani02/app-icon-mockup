@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Squircle } from '@squircle-js/react';
-import { Shuffle, Grip, Sun, Moon, Upload, Download, Monitor, Paintbrush, Frame, ArrowUpLeft, ArrowUpRight, ArrowDownLeft, ArrowDownRight, EyeOff, Sticker } from 'lucide-react';
+import { Shuffle, Grip, Sun, Moon, Upload, Download, Monitor, Paintbrush, Frame, ArrowUpLeft, ArrowUpRight, ArrowDownLeft, ArrowDownRight, EyeOff, Sticker, Smartphone } from 'lucide-react';
 import IconCraftPromoCard from './IconCraftPromoCard';
 import ProductHuntBadge from './ProductHuntBadge';
 import { getMeshOptions, shuffleArray, rgbToHex } from '../utils/colors';
@@ -146,6 +146,7 @@ export default function ControlsPanel({
   viewMode, setViewMode,
   focusMode, setFocusMode,
   hideOtherIcons, setHideOtherIcons,
+  popularApps, handlePopularAppsToggle,
   randomizeAppPositions,
   deviceOptions, selectedDevice, setSelectedDevice,
   deviceZoom, setDeviceZoom,
@@ -981,6 +982,17 @@ export default function ControlsPanel({
             >
               <EyeOff size={14} strokeWidth={2} color="#374151" aria-hidden="true" />
               Hide Other Icons
+            </ToggleSwitch>
+
+            {/* Popular Apps Toggle */}
+            <ToggleSwitch
+              id="popular-apps-toggle"
+              checked={popularApps}
+              onChange={handlePopularAppsToggle}
+              ariaLabel="Switch to a realistic homescreen with popular third-party apps"
+            >
+              <Smartphone size={14} strokeWidth={2} color="#374151" aria-hidden="true" />
+              Popular Apps
             </ToggleSwitch>
 
             {/* Randomize Button */}

@@ -544,15 +544,51 @@ export default function IOSHomeScreen() {
       { name: "iMessage", src: `${base}icons/imessage.png` }
   ];
 
+  // Popular apps layout - realistic homescreen with third-party apps
+  const popularGridApps = [
+    { name: "YouTube", src: `${base}icons/youtube.webp` },
+    { name: "Snapchat", src: `${base}icons/snapchat.webp` },
+    { name: "Spotify", src: `${base}icons/spotify.webp` },
+    { name: "Gmail", src: `${base}icons/gmail.webp` },
+    { name: "Reddit", src: `${base}icons/reddit.webp` },
+    { name: "X", src: `${base}icons/x.webp` },
+    { name: "ChatGPT", src: `${base}icons/chatgpt.webp` },
+    { name: "Discord", src: `${base}icons/discord.webp` },
+    { name: "Photos", src: `${base}icons/gallery.png` },
+    { name: "Facebook", src: `${base}icons/facebook.webp` },
+    { name: "Camera", src: `${base}icons/camera.png` },
+    { name: "Telegram", src: `${base}icons/telegram.webp` },
+  ];
+  const popularDockApps = [
+      { name: "Phone", src: `${base}icons/call.png` },
+      { name: "Safari", src: `${base}icons/safari.png` },
+      { name: "Spotify", src: `${base}icons/spotify.webp` },
+      { name: "iMessage", src: `${base}icons/imessage.png` }
+  ];
+
+  const [popularApps, setPopularApps] = useState(false);
   const [gridApps, setGridApps] = useState(defaultGridApps);
   const [dockApps, setDockApps] = useState(defaultDockApps);
 
+  // Toggle between default and popular apps
+  const handlePopularAppsToggle = (enabled) => {
+    setPopularApps(enabled);
+    if (enabled) {
+      setGridApps(popularGridApps);
+      setDockApps(popularDockApps);
+    } else {
+      setGridApps(defaultGridApps);
+      setDockApps(defaultDockApps);
+    }
+    setRandomizeKey(prev => prev + 1);
+  };
+
   // Function to randomize app positions
   const randomizeAppPositions = () => {
-    const shuffledGridApps = shuffleArray([...defaultGridApps]);
-    const shuffledDockApps = shuffleArray([...defaultDockApps]);
-    setGridApps(shuffledGridApps);
-    setDockApps(shuffledDockApps);
+    const currentGrid = popularApps ? [...popularGridApps] : [...defaultGridApps];
+    const currentDock = popularApps ? [...popularDockApps] : [...defaultDockApps];
+    setGridApps(shuffleArray(currentGrid));
+    setDockApps(shuffleArray(currentDock));
     setRandomizeKey(prev => prev + 1); // Force re-render with animation
   };
 
@@ -957,7 +993,8 @@ export default function IOSHomeScreen() {
     const uiScale = getUIScale();
     const iconSize = 62 * uiScale * frameSize.scale;
     const gridGap = 16 * uiScale * frameSize.scale;
-    const rowGap = 24 * uiScale * frameSize.scale;
+    const hideLabels = customAppName.trim() === '';
+    const rowGap = (hideLabels ? 30 : 24) * uiScale * frameSize.scale;
 
     return (
       <div className="app-grid" style={{
@@ -984,7 +1021,7 @@ export default function IOSHomeScreen() {
                 edgeHighlighting={edgeHighlighting}
                 palette={palette}
                 onClick={handleIconClick}
-                hasLabel={true}
+                hasLabel={customAppName.trim() !== ''}
                 isFocused={focusMode}
               />
             );
@@ -1000,11 +1037,12 @@ export default function IOSHomeScreen() {
                 pointerEvents: hideOtherIcons ? 'none' : 'auto',
                 transition: 'opacity 0.3s ease'
               }}>
-                <AppIcon 
-                  name={app?.name} 
+                <AppIcon
+                  name={app?.name}
                   src={app?.src}
                   size={iconSize}
                   scale={uiScale * frameSize.scale}
+                  nolabel={customAppName.trim() === ''}
                 />
               </div>
             );
@@ -1098,6 +1136,7 @@ export default function IOSHomeScreen() {
     viewMode, setViewMode,
     focusMode, setFocusMode,
     hideOtherIcons, setHideOtherIcons,
+    popularApps, handlePopularAppsToggle,
     randomizeAppPositions,
     deviceOptions, selectedDevice, setSelectedDevice,
     deviceZoom, setDeviceZoom,
@@ -1706,6 +1745,7 @@ export default function IOSHomeScreen() {
 }
 
 function AppIcon({ src, name, nolabel = false, size = 62, scale = 1 }) {
+  const isWebp = src && src.endsWith('.webp');
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Squircle
@@ -1725,10 +1765,10 @@ function AppIcon({ src, name, nolabel = false, size = 62, scale = 1 }) {
           src={src}
           alt={`${name} app`}
           style={{
-            width: '110%',
-            height: '110%',
+            width: isWebp ? '100%' : '110%',
+            height: isWebp ? '100%' : '110%',
             objectFit: 'cover',
-            transform: 'translate(-5%, -5%)',
+            transform: isWebp ? 'none' : 'translate(-5%, -5%)',
             imageRendering: 'crisp-edges'
           }}
         />
