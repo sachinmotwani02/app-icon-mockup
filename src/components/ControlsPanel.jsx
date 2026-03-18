@@ -374,7 +374,11 @@ export default function ControlsPanel({
               id="app-name-input"
               type="text"
               value={customAppName}
-              onChange={(e) => setCustomAppName(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                const capitalized = val.replace(/(?:^|\s)\S/g, (char) => char.toUpperCase());
+                setCustomAppName(capitalized);
+              }}
               aria-describedby="app-name-help"
               style={{
                 width: '100%',
